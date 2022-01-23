@@ -1,2 +1,5 @@
-# SimpleSocketProtocol
-A portable C language socket-based software transport protocol library for any hardware communication interface on any platform.
+Simple Socket Protocol for Embedded Systems
+
+https://www.codeproject.com/Articles/5321271/Simple-Socket-Protocol-for-Embedded-Systems
+
+David Lafreniere, Jan 2022.
