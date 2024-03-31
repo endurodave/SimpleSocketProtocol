@@ -15,6 +15,18 @@
 
 using namespace std;
 
+void ErrorHandlerCallback(serialize::ParsingError error, int line, const char* file)
+{
+    // Output parsing error message
+    cout << "PARSE ERROR: " << file << " " << line << " " << static_cast<int>(error) << endl;
+}
+
+void ParseHandlerCallback(const type_info& typeId, size_t size)
+{
+    // Output parser progress
+    cout << typeId.name() << " " << size << endl;
+}
+
 // Measurement data with serialize
 class Measurement : public serialize::I
 {
@@ -80,6 +92,9 @@ static void SspCallbackSocket0(UINT8 socketId, const void* data, UINT16 dataSize
         if (status == SSP_SUCCESS)
         {
             serialize ms;
+            ms.setErrorHandler(&ErrorHandlerCallback);
+            ms.setParseHandler(&ParseHandlerCallback);
+
             Message msg;
 
             // Convert incoming bytes to a stream for parsing
@@ -118,6 +133,9 @@ static void SspCallbackSocket1(UINT8 socketId, const void* data, UINT16 dataSize
         if (status == SSP_SUCCESS)
         {
             serialize ms;
+            ms.setErrorHandler(&ErrorHandlerCallback);
+            ms.setParseHandler(&ParseHandlerCallback);
+
             Message msg;
 
             // Convert incoming bytes to a stream for parsing
@@ -169,6 +187,8 @@ int serialize_example()
 
     // Message serializer instance
     serialize ms;
+    ms.setErrorHandler(&ErrorHandlerCallback);
+    ms.setParseHandler(&ParseHandlerCallback);
 
     while (1)
     {
