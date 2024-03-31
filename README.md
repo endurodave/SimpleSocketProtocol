@@ -567,6 +567,10 @@ typedef enum
 
 <p>The Arduino IDE requires the source code in a common directory. The <strong>copysrc.bat</strong> copies the source files to a common directory for easy build and testing.</p>
 
+<h2>Serialize</h2>
+
+The <b>example_serialize.cpp</b> shows how to use a simple C++ binary message serializer to encode C++ objects for transport over SSP (or any other protocol).
+
 <h2>Resources</h2>
 
 <p>The SSP library is compact. Arduino Sketch reports 9k&nbsp;program storage space for the entire application (about 3% of program space on my ATmega 2560). Of that, SSP consumes about 2.5k.</p>
@@ -578,7 +582,8 @@ typedef enum
 <h2>Referenced Articles</h2>
 
 <ul>
-	<li><a href="https://www.codeproject.com/Articles/1272619/A-Fixed-Block-Memory-Allocator-in-C">A Fixed Block Allocator in C</a>&nbsp;- by David Lafreniere</li>
+	<li><a href=https://github.com/endurodave/C_Allocator">A Fixed Block Allocator in C</a>&nbsp;- by David Lafreniere</li>
+    	<li><a href="https://github.com/endurodave/MessageSerialize">A Binary Message Serializer in C++</a>&nbsp;- by David Lafreniere</li>
 </ul>
 
 <h2>Conclusion</h2>
