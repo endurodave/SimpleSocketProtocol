@@ -57,6 +57,12 @@
     <ClCompile Include="..\..\ssp\fb_allocator.c">
       <Filter>ssp</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\example\windows\serialize_example.cpp">
+      <Filter>example</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\example\windows\simple_example.cpp">
+      <Filter>example</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\ssp\ssp.h">
@@ -94,6 +100,9 @@
     </ClInclude>
     <ClInclude Include="..\..\ssp\fb_allocator.h">
       <Filter>ssp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\example\windows\serialize.h">
+      <Filter>example</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

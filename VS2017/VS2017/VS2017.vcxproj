@@ -20,6 +20,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\example\windows\main.cpp" />
+    <ClCompile Include="..\..\example\windows\serialize_example.cpp" />
+    <ClCompile Include="..\..\example\windows\simple_example.cpp" />
     <ClCompile Include="..\..\port\ssp_fault.c" />
     <ClCompile Include="..\..\port\ssp_hal_arduino.cpp" />
     <ClCompile Include="..\..\port\ssp_hal_mem_buf.c" />
@@ -36,6 +38,7 @@
     <ClCompile Include="..\..\ssp\ssp_util.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\example\windows\serialize.h" />
     <ClInclude Include="..\..\ssp\fb_allocator.h" />
     <ClInclude Include="..\..\ssp\ssp.h" />
     <ClInclude Include="..\..\ssp\ssp_com.h" />
@@ -54,32 +57,32 @@
     <ProjectGuid>{9EFAF7C2-8478-40E1-B29B-D80F5BB2A5AA}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>VS2017</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
