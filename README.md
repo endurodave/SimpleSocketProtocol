@@ -80,7 +80,7 @@ David Lafreniere, Jan 2022.
 
 <p>The SSP API within <strong>ssp.h</strong> is shown below:</p>
 
-<pre>
+```cpp
 // Called once per port to initialize
 SspErr SSP_Init(SspPortId portId);
 
@@ -116,11 +116,12 @@ void SSP_Process(void);
 void SSP_SetErrorHandler(ErrorHandler handler);
 
 // Get the last SSP error
-SspErr SSP_GetLastErr(void);</pre>
+SspErr SSP_GetLastErr(void);
+```
 
 <p>Send status and receive data is notified by registering a callback function conforming to the <code>SspDataCallback </code>function signature.</p>
 
-<pre>
+```cpp
 /// SSP callback function signature for receiving socket data asynchronously.
 /// Called upon transmission success or failure. 
 /// @param[in] socketId The socket identifier.
@@ -133,44 +134,44 @@ SspErr SSP_GetLastErr(void);</pre>
 ///     SSP_Listen() callback registration. 
 typedef void(*SspDataCallback)(UINT8 socketId, const void* data, UINT16 dataSize,
     SspDataType type, SspErr status, void* userData);
-</pre>
+```
 
 <h2>Using the Code</h2>
 
 <p>Initialize one or more communication ports.</p>
 
-<pre>
-    // Initialize the ports
-    SSP_Init(SSP_PORT1);
-</pre>
+```cpp
+// Initialize the ports
+SSP_Init(SSP_PORT1);
+```
 
 <p>Open a socket on a specified port.</p>
 
-<pre>
-    // Open socket 0
-    SspErr err = SSP_OpenSocket(SSP_PORT1, 0);
-</pre>
+```cpp
+// Open socket 0
+SspErr err = SSP_OpenSocket(SSP_PORT1, 0);
+```
 
 <p>Register for callbacks on function <code>SspCallbackSocket0()</code>. The third argument is optional user data will be passed back during the callback, or <code>NULL</code>.</p>
 
-<pre>
-    // Listen on socket 0
-    err = SSP_Listen(0, &amp;SspCallbackSocket0, NULL);
-</pre>
+```cpp
+// Listen on socket 0
+err = SSP_Listen(0, &amp;SspCallbackSocket0, NULL);
+```
 
 <p>Send data over a socket. In this example, the source socket is 0 and destination socket is 1.</p>
 
-<pre>
-    char sendData[32];
-    snprintf(sendData, 32, &quot;Hello World!&quot;);
+```cpp
+char sendData[32];
+snprintf(sendData, 32, &quot;Hello World!&quot;);
 
-    // Send data
-    err = SSP_Send(0, 1, sendData, UINT16(strlen(sendData))+1);
-</pre>
+// Send data
+err = SSP_Send(0, 1, sendData, UINT16(strlen(sendData))+1);
+```
 
 <p>Handle callbacks from the SSP library. Use the callback argument to determine if the callback is a send or receive notification, and the error status.</p>
 
-<pre>
+```cpp
 static void SspCallbackSocket0(UINT8 socketId, const void* data, UINT16 dataSize,
     SspDataType type, SspErr status, void* userData)
 {
@@ -193,18 +194,18 @@ static void SspCallbackSocket0(UINT8 socketId, const void* data, UINT16 dataSize
             SSP_TRACE(&quot;SSP_SEND PORT1 FAIL&quot;);
     }
 }
-</pre>
+```
 
 <p><code>SSP_Process()</code> must be called periodically to send/receive messages.</p>
 
-<pre>
-        do
-        {
-            // Call while there is send or receive data to process
-            SSP_Process();
-        } while (!SSP_IsRecvQueueEmpty(SSP_PORT1) ||
-                 SSP_GetSendQueueSize(SSP_PORT1) != 0);
-</pre>
+```cpp
+do
+{
+    // Call while there is send or receive data to process
+    SSP_Process();
+} while (!SSP_IsRecvQueueEmpty(SSP_PORT1) ||
+         SSP_GetSendQueueSize(SSP_PORT1) != 0);
+```
 
 <p>When to call <code>SSP_Process()</code> is application defined. In this example, <code>SSP_Process()</code> is called repeatedly until all send or receive data is processed. <code>SSP_Process()</code> handles all sending, receiving and timeouts. If multithreaded, call from a single thread of control. <code>SSP_Listen()</code> registered callbacks are invoked during <code>SSP_Process()</code>. Ideas of when to call <code>SSP_Process()</code>.</p>
 
@@ -218,10 +219,10 @@ static void SspCallbackSocket0(UINT8 socketId, const void* data, UINT16 dataSize
 
 <p>At application exit call the terminate function and close sockets.</p>
 
-<pre>
-    err = SSP_CloseSocket(0);
-    SSP_Term(); 
-</pre>
+```cpp
+err = SSP_CloseSocket(0);
+SSP_Term(); 
+```
 
 <h3>Usage Notes</h3>
 
@@ -257,7 +258,7 @@ static void SspCallbackSocket0(UINT8 socketId, const void* data, UINT16 dataSize
 
 <p>All SSP options are defined within <strong>ssp_opt.h</strong>. Some options are shown below:</p>
 
-<pre>
+```cpp
 // How long to wait for remote CPU to provide and ACK or NAK
 #define SSP_ACK_TIMEOUT     300    // in mS
 
@@ -278,7 +279,7 @@ static void SspCallbackSocket0(UINT8 socketId, const void* data, UINT16 dataSize
 
 // Define uses fixed block allocator. Undefine uses malloc/free. 
 #define USE_FB_ALLOCATOR
-</pre>
+```
 
 <p>Search <code>TODO </code>within the source code to find other application specific code locations.</p>
 
@@ -288,7 +289,7 @@ static void SspCallbackSocket0(UINT8 socketId, const void* data, UINT16 dataSize
 
 <p>The OS abstraction interface (OSAL) is in <strong>ssp_osal.h</strong>. The OSAL provides a critical section, software locks and ticks for timing. For systems without an operating system, lock-related functions below will do nothing.</p>
 
-<pre>
+```cpp
 void SSPOSAL_Init(void);
 void SSPOSAL_Term(void);
 
@@ -301,11 +302,11 @@ BOOL SSPOSAL_LockGet(SSP_OSAL_HANDLE handle, UINT32 timeout);
 BOOL SSPOSAL_LockPut(SSP_OSAL_HANDLE handle);
 
 UINT32 SSPOSAL_GetTickCount(void);
-</pre>
+```
 
 <p>The hardware abstraction interface (HAL) is in <strong>ssp_hal.h</strong>. HAL is the physical layer. The HAL isolates the SSP library from the details for sending/receiving data over a hardware interface. The HAL may support multiple interface types. For instance, port 1 is a UART and port 2 is SPI.</p>
 
-<pre>
+```cpp
 void SSPHAL_Init(SspPortId portId);
 void SSPHAL_Term(void);
 
@@ -321,7 +322,7 @@ BOOL SSPHAL_IsRecvQueueEmpty(SspPortId portId);
 
 void SSPHAL_PowerSave(BOOL enable);
 BOOL SSPHAL_IsPowerSave(void);
-</pre>
+```
 
 <p>Each abstraction interface must be implemented for a specific target. Example implementations for Windows, Arduino, and C++ standard library are located within the <strong>port </strong>directory.</p>
 
@@ -466,18 +467,20 @@ BOOL SSPHAL_IsPowerSave(void);
 
 <p>The <code>SSP_Send()</code> API looks normal; source and destintation sockets, data, and data size.</p>
 
-<pre>
-SspErr SSP_Send(UINT8 srcSocketId, UINT8 destSocketId, const void* data, UINT16 dataSize);</pre>
+```cpp
+SspErr SSP_Send(UINT8 srcSocketId, UINT8 destSocketId, const void* data, UINT16 dataSize);
+```
 
 <p><code>SSP_SendMultiple()</code>, on the other hand, looks strange.&nbsp;</p>
 
-<pre>
+```cpp
 SspErr SSP_SendMultiple(UINT8 srcSocketId, UINT8 destSocketId, INT16 numData,
-    void const** dataArray, UINT16* dataSizeArray);</pre>
+    void const** dataArray, UINT16* dataSizeArray);
+```
 
 <p>The API above is used to send disparate data without pre-copying the data into an intermediary buffer. In other words, sometimes the data you want to send is not conveniently packed into a single buffer. This API allows sending discrete pieces of information while letting the SSP do the packing.</p>
 
-<pre>
+```cpp
 UINT16 sendArrSize[2];
 const void* sendArr[2]; 
      
@@ -486,7 +489,8 @@ sendArrSize[0] = (UINT16)strlen((char*)sendArr[0]);
 sendArr[1] = &quot;World\0&quot;;
 sendArrSize[1] = (UINT16)strlen((char*)sendArr[1]) + 1;
 
-err = SSP_SendMultiple(1, 0, 2, sendArr, sendArrSize);</pre>
+err = SSP_SendMultiple(1, 0, 2, sendArr, sendArrSize);
+```
 
 <p>The send queue is serviced during <code>SSP_Process()</code>. One message at a time is sent in the order that it was received.</p>
 
@@ -513,7 +517,7 @@ err = SSP_SendMultiple(1, 0, 2, sendArr, sendArrSize);</pre>
 
 <p>SSP provides numerous error codes to assist with problem diagnosis.</p>
 
-<pre>
+```cpp
 typedef enum
 {
     SSP_SUCCESS,
@@ -539,7 +543,7 @@ typedef enum
     SSP_DUPLICATE_LISTENER,
     SSP_SOFTWARE_FAULT
 } SspErr;
-</pre>
+```
 
 <h2>Porting</h2>
 
