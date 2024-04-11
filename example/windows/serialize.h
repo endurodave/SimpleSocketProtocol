@@ -126,16 +126,16 @@ public:
 
     enum class Type 
     {
-        UNKNOWN = 0,
-        LITERAL = 1,
-        STRING = 8,
-        WSTRING = 9,
-        VECTOR = 20,
-        MAP = 21,
-        LIST = 22,
-        SET = 23,
-        ENDIAN = 30,
-        USER_DEFINED = 31,
+        UNKNOWN = 0,    // 0x0
+        LITERAL = 1,    // 0x1
+        STRING = 8,     // 0x8
+        WSTRING = 9,    // 0x9
+        VECTOR = 20,    // 0x14
+        MAP = 21,       // 0x15
+        LIST = 22,      // 0x16
+        SET = 23,       // 0x17
+        ENDIAN = 30,    // 0x1E
+        USER_DEFINED = 31,  // 0x1F
     };
 
     enum class ParsingError

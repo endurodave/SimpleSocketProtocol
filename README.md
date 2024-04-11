@@ -156,14 +156,14 @@ SspErr err = SSP_OpenSocket(SSP_PORT1, 0);
 
 ```cpp
 // Listen on socket 0
-err = SSP_Listen(0, &amp;SspCallbackSocket0, NULL);
+err = SSP_Listen(0, &SspCallbackSocket0, NULL);
 ```
 
 <p>Send data over a socket. In this example, the source socket is 0 and destination socket is 1.</p>
 
 ```cpp
 char sendData[32];
-snprintf(sendData, 32, &quot;Hello World!&quot;);
+snprintf(sendData, 32, "Hello World!");
 
 // Send data
 err = SSP_Send(0, 1, sendData, UINT16(strlen(sendData))+1);
@@ -182,16 +182,16 @@ static void SspCallbackSocket0(UINT8 socketId, const void* data, UINT16 dataSize
         if (status == SSP_SUCCESS)
         {
             // Do something with incoming data
-            SSP_TRACE_FORMAT(&quot;SSP_RECEIVE PORT1: %s&quot;, (char*)data);
+            SSP_TRACE_FORMAT("SSP_RECEIVE PORT1: %s", (char*)data);
         }
     }
     // Send data callback?
     else if (type == SSP_SEND)
     {
         if (status == SSP_SUCCESS)
-            SSP_TRACE(&quot;SSP_SEND PORT1 SUCCESS&quot;);
+            SSP_TRACE("SSP_SEND PORT1 SUCCESS");
         else
-            SSP_TRACE(&quot;SSP_SEND PORT1 FAIL&quot;);
+            SSP_TRACE("SSP_SEND PORT1 FAIL");
     }
 }
 ```
@@ -484,9 +484,9 @@ SspErr SSP_SendMultiple(UINT8 srcSocketId, UINT8 destSocketId, INT16 numData,
 UINT16 sendArrSize[2];
 const void* sendArr[2]; 
      
-sendArr[0] = &quot;Hello &quot;;
+sendArr[0] = "Hello ";
 sendArrSize[0] = (UINT16)strlen((char*)sendArr[0]);
-sendArr[1] = &quot;World\0&quot;;
+sendArr[1] = "World\0";
 sendArrSize[1] = (UINT16)strlen((char*)sendArr[1]) + 1;
 
 err = SSP_SendMultiple(1, 0, 2, sendArr, sendArrSize);
