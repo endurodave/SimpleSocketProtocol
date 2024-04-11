@@ -443,7 +443,7 @@ BOOL SSPHAL_IsPowerSave(void);
 
 <p>The fixed block allocator is documented in the article:</p>
 
-<p><a href="https://www.codeproject.com/Articles/1272619/A-Fixed-Block-Memory-Allocator-in-C">https://www.codeproject.com/Articles/1272619/A-Fixed-Block-Memory-Allocator-in-C</a></p>
+<p><a href="A C-language Fixed Block Memory Allocator">https://github.com/endurodave/C_Allocator  </a></p>
 
 <h3>Sequence Control</h3>
 
