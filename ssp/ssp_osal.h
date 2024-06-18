@@ -25,7 +25,7 @@ void SSPOSAL_ExitCritical(void);
 
 SSP_OSAL_HANDLE SSPOSAL_LockCreate(void);
 void SSPOSAL_LockDestroy(SSP_OSAL_HANDLE handle);
-BOOL SSPOSAL_LockGet(SSP_OSAL_HANDLE handle, UINT32 timeout);
+BOOL SSPOSAL_LockGet(SSP_OSAL_HANDLE handle, UINT32 timeout);		//timeout in msec
 BOOL SSPOSAL_LockPut(SSP_OSAL_HANDLE handle);
 
 UINT32 SSPOSAL_GetTickCount(void);

@@ -31,6 +31,7 @@ typedef UINT16 SspPacketFooterType;
 // Maximum number of SspData fixed blocks
 #define MAX_SSP_DATA_BLOCKS     SSP_MAX_MESSAGES
 
+#ifndef MAX_PORT_RECV_BYTES
 // Maximum number of bytes to read from communication port on each
 // call to SSPHAL_PortRecv()
 #define MAX_PORT_RECV_BYTES     1
@@ -38,6 +39,7 @@ typedef UINT16 SspPacketFooterType;
 // If communication port driver guarantees one full SSP message when
 // SSPHAL_PortRecv() called (like maybe a DMA SPI driver)
 //#define MAX_PORT_RECV_BYTES     SSP_PACKET_SIZE(SSP_MAX_BODY_SIZE)
+#endif   //#ifndef MAX_PORT_RECV_BYTES
 
 // Define the fixed block allocator and memory for dynamic SspData. Add +1 to number 
 // of blocks to account for one dedicated block for receiving data (i.e. self.sspDataRecv).
