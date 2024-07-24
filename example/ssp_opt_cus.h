@@ -48,19 +48,19 @@
 
 typedef enum
 {
-    SSP_INVALID_PORT = 0,	// Must be 0
-    SSP_PORT1 = 1,          /// @TODO: Define port ID's
-    SSP_PORT2 = 2,
-    SSP_MAX_PORTS
-} SspPortId;
+    SSP_INVALID_PORT = 0,   // Must be available and must be 0
+    SSP_PORT1 = 1,          // PORT1 (may be replaced....), must be 1
+    SSP_PORT2 = 2,          // PORT2 (may be replaced....)
+    SSP_MAX_PORTS           // Must be available and last no.
+} SspPortId;                // Enum OBLIGATORY!
 
 typedef enum
 {
-    SSP_SOCKET_MIN = 0,	    // Must be 0
+    SSP_SOCKET_MIN = 0,	    // Must be available and must be 0
     SSP_SOCKET_COMMAND = SSP_SOCKET_MIN, /// @TODO: Define socket ID's
     SSP_SOCKET_STATUS,
     SSP_SOCKET_LOG,
-    SSP_SOCKET_MAX
-} SspSocketId;
+    SSP_SOCKET_MAX          // Must be available and last no.
+} SspSocketId;              // Enum OBLIGATORY!
 
 #endif	//#ifndef SSP_OPT_CUS_H

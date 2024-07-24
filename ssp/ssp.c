@@ -655,7 +655,7 @@ void SSP_Term(void)
     UINT16 portId;
 
     // Iterate over all ports
-    for (portId=SSP_PORT1; portId<SSP_MAX_PORTS; portId++)
+    for (portId=1; portId<SSP_MAX_PORTS; portId++)
     {
         // Remove all outgoing messages from list
         while ((sendData = ListFront(portId)) != NULL)
@@ -867,7 +867,7 @@ void SSP_Process()
     BOOL powerSave = TRUE;
 
     // Iterate over all ports
-    for (portId=SSP_PORT1; portId<SSP_MAX_PORTS; portId++)
+    for (portId=1; portId<SSP_MAX_PORTS; portId++)
     {
         // Is the port open?
         if (SSPCOM_IsPortOpen((SspPortId)portId) == TRUE)
