@@ -4,7 +4,50 @@ Originally published on CodeProject at: <a href="https://www.codeproject.com/Art
 
 David Lafreniere, Jan 2022.
 
-<h2>Introduction</h2>
+# Table of Contents
+
+- [Simple Socket Protocol for Embedded Systems](#simple-socket-protocol-for-embedded-systems)
+- [Table of Contents](#table-of-contents)
+- [Introduction](#introduction)
+  - [What is SSP?](#what-is-ssp)
+- [Overview](#overview)
+- [Using the Code](#using-the-code)
+  - [Usage Notes](#usage-notes)
+    - [Socket Types](#socket-types)
+    - [Streaming](#streaming)
+    - [Message Throttling](#message-throttling)
+    - [Communication Down](#communication-down)
+  - [Configuration](#configuration)
+  - [Porting](#porting)
+- [Layers](#layers)
+  - [SSP Layers](#ssp-layers)
+    - [SSPCOM](#sspcom)
+    - [SSP](#ssp)
+- [Simple Socket Protocol (SSP)](#simple-socket-protocol-ssp)
+  - [Sockets](#sockets)
+  - [Packets](#packets)
+  - [Packet Types](#packet-types)
+    - [Data Packet](#data-packet)
+    - [ACK Packet](#ack-packet)
+    - [NAK Packet](#nak-packet)
+  - [Parsing](#parsing)
+  - [Queuing](#queuing)
+  - [Sequence Control](#sequence-control)
+  - [Duplicate Packets](#duplicate-packets)
+  - [Timeouts and Retries](#timeouts-and-retries)
+  - [Flow Control](#flow-control)
+  - [Sending Packets](#sending-packets)
+  - [Receiving Packets](#receiving-packets)
+  - [Error Handling](#error-handling)
+- [Porting](#porting-1)
+  - [Arduino](#arduino)
+- [Serialize](#serialize)
+- [Resources](#resources)
+- [Referenced Articles](#referenced-articles)
+- [Conclusion](#conclusion)
+
+
+# Introduction
 
 <p>Software transport communication protocols are difficult to implement. Embedded systems use a variety of hardware communication interfaces: UART, CAN bus, SPI, Bluetooth LE, etc&hellip; In my experience, a custom-designed software transport protocol is usually implemented between the hardware driver and the application code. These one-off protocols are sometimes fragile, difficult to use, with minimal features. Maybe error checking is implemented, or retries, or acknowledgements, or thread-safety; or not.&nbsp;</p>
 
@@ -50,7 +93,7 @@ David Lafreniere, Jan 2022.
 
 <p>I&rsquo;ve used variations of this code on many different projects over 20-years or so, mainly small embedded devices communicating with one another over UART/CAN/SPI, or to a host device over BLE/Serial. If your embedded device is equipped with UART, or other non-Ethernet communication interface, and a simple software transport protocol is required then read on!</p>
 
-<h3>What is SSP?</h3>
+## What is SSP?
 
 <p>Let me further clarify what SSP is and is not.</p>
 
@@ -74,7 +117,7 @@ David Lafreniere, Jan 2022.
 
 <p>SSP was not designed by committee and does not conform to any standard.</p>
 
-<h2>Overview</h2>
+# Overview
 
 <p>I&rsquo;ll first present the API, simple SSP usage examples, and then dive into the technical details.</p>
 
@@ -136,7 +179,7 @@ typedef void(*SspDataCallback)(UINT8 socketId, const void* data, UINT16 dataSize
     SspDataType type, SspErr status, void* userData);
 ```
 
-<h2>Using the Code</h2>
+# Using the Code
 
 <p>Initialize one or more communication ports.</p>
 
@@ -224,11 +267,11 @@ err = SSP_CloseSocket(0);
 SSP_Term(); 
 ```
 
-<h3>Usage Notes</h3>
+## Usage Notes
 
 <p>SSP socket communication over an embedded hardware communication port&nbsp;offers convenient design paradigms. Ideas on SSP usage follows.</p>
 
-<h4>Socket Types</h4>
+### Socket Types
 
 <p>Sockets allow categorizing communications between two devices. Here are some ideas of different socket types.</p>
 
@@ -240,21 +283,21 @@ SSP_Term();
 	<li>Configuration socket &ndash; send configuration data</li>
 </ul>
 
-<h4>Streaming</h4>
+### Streaming
 
 <p>Maybe an embedded device locally accumulates log data and the logs need to be transferred to another device for permanent storage or post-processing. Streaming the data over a log socket is easy. To start the transfer, send the first log message using <code>SSP_Send()</code>. During the sender socket callback notification, if <code>SSP_SEND </code>is <code>SSP_SUCCESS</code> then send the next log message. Keep sending a new log messages on each <code>SSP_SEND</code>/<code>SSP_SUCCESS</code>&nbsp;callback until all logs are transferred. SSP allows calling <code>SSP_Send()</code> during a notification callback. This is an easy way to stream data without overwhelming the available buffers since only one send queue entry is used at a time.</p>
 
-<h4>Message Throttling</h4>
+### Message Throttling
 
 <p>A low priority socket can suspend/slow data transfer if SSP is busy by using <code>SSP_GetSendQueueSize()</code>. Let&rsquo;s say we are sending log data using the streaming method above and 10 total send queue buffers exist. Before sending a log message the queue size is checked. If 5 or more pending queue messages, the log data is not sent thus preserving the send queue for more critical messages. A timer periodically checks if the queue usage drops below 5 and calls <code>SSP_Send()</code> to continue log streaming. Using the available send queue entries the application best decides how to prioritize message sending.</p>
 
-<h4>Communication Down</h4>
+### Communication Down
 
 <p>SSP is connectionless, meaning SSP does not negotiate a connection between two devices. The sender opens a port and sends data. If a listener does not respond, a <code>SSP_SEND_RETRIES_FAILED</code> error occurs.</p>
 
 <p>Loss of communication is detected in the <code>SSP_Listen()</code> callback if <code>SSP_SEND </code>and not <code>SSP_SUCCESS </code>is detected. Maybe an existing socket is used for communication loss detected. Or perhaps a heartbeat socket is dedicated to periodically ping the remote to detected communication loss. These details are left to the application.</p>
 
-<h3>Configuration</h3>
+## Configuration
 
 <p>All SSP options are defined within <strong>ssp_opt.h</strong>. Some options are shown below:</p>
 
@@ -285,7 +328,7 @@ SSP_Term();
 
 <p>The CRC table or loop based implementation is defined within <strong>ssp_crc.c</strong>. The table-based version is faster, but the loop version consumes less storage.</p>
 
-<h3>Porting</h3>
+## Porting
 
 <p>The OS abstraction interface (OSAL) is in <strong>ssp_osal.h</strong>. The OSAL provides a critical section, software locks and ticks for timing. For systems without an operating system, lock-related functions below will do nothing.</p>
 
@@ -328,7 +371,7 @@ BOOL SSPHAL_IsPowerSave(void);
 
 <p>The HAL interfaces to the communication driver. <code>SSPHAL_PortSend()</code> sends data and <code>SSPHAL_PortRecv()</code> reads data. Typically the driver uses internal send/receive buffers to facilitate data communication. The driver details are application specific. Maybe the driver is interrupt driven sending/receiving one or more bytes per interrupt. Or perhaps DMA transfer is utilized. Regardless, the HAL abstracts those details from the SSP library.</p>
 
-<h2>Layers</h2>
+# Layers
 
 <p>The layer diagram below shows the major components.</p>
 
@@ -343,11 +386,11 @@ BOOL SSPHAL_IsPowerSave(void);
 	<li>Communication Driver &ndash; the software driver for the hardware interface.</li>
 </ul>
 
-<h3>SSP Layers</h3>
+## SSP Layers
 
 <p>SSP consists of two layers: SSPCOM (<strong>ssp_com.c</strong>) and SSP (<strong>ssp.c</strong>).</p>
 
-<h4>SSPCOM</h4>
+### SSPCOM
 
 <p>The SSPCOM module sends/receives a single SSP packet. SSPCOM responsibilities include:</p>
 
@@ -362,7 +405,7 @@ BOOL SSPHAL_IsPowerSave(void);
 
 <p>An SSP packet is comprised of a packet header, client data, and footer. The header specifies source/destination sockets, message type, transaction ID and the body length among other things. The client data is the application defined payload sent to the remote CPU. The packet footer is a 16-bit CRC used for error detection.</p>
 
-<h4>SSP</h4>
+### SSP
 
 <p>SSP is the client application interface. SSP utilizes SSPCOM services and provides a protocol layer that guarantees packet delivery through message acknowledgement, message retries and timeouts. SSP responsibilities include:</p>
 
@@ -378,19 +421,19 @@ BOOL SSPHAL_IsPowerSave(void);
 
 <p>SSP clients send data to/from a remote system using a socket ID. SSP automatically retries failed transmissions and notifies if the packet ultimately cannot be delivered.</p>
 
-<h2>Simple Socket Protocol (SSP)</h2>
+# Simple Socket Protocol (SSP)
 
 <p>Simple Socket Protocol (SSP) is a software-based, binary transport protocol transmitted over any hardware communication interface. SSP manages multiple hardware ports, sockets, packets, error detection, timeouts and retries.</p>
 
 <p>SSP provides a common API for software communications. The SSP library is implemented in C. The library is thread-safe.</p>
 
-<h3>Sockets</h3>
+## Sockets
 
 <p>All SSP packets are sent and received through sockets. A SSP socket is an endpoint of a bidirectional inter-process communication over a communication interface. A socket paradigm multiplexes a single hardware interface to facilitate private communication between different subsystems endpoints residing on separate processors. A socket provides the appearance of multiple independent communication channels.</p>
 
 <p>The SSP library simultaneously supports multiple hardware communications ports. On a single CPU, sharing sockets across ports is not supported. A socket ID must be unique across all ports, meaning socket ID 1 on two ports is not allowed.</p>
 
-<h3>Packets</h3>
+## Packets
 
 <p>Messages are sent using packets. A packet contains a 10-byte header, the packet body with a variable length, and 2-byte footer.</p>
 
@@ -400,7 +443,7 @@ BOOL SSPHAL_IsPowerSave(void);
 
 <p>Use <code>SSP_Send()</code> or <code>SSP_SendMultiple()</code> to send data. All sending is asynchronous. Data is queued to be sent during <code>SSP_Process()</code>. A transmission failure is reported asynchronously to the client on the <code>SSP_Listen()</code> registered callback function.</p>
 
-<h3>Packet Types</h3>
+## Packet Types
 
 <p>SSP provides one 8-bit location for packet type.</p>
 
@@ -410,17 +453,17 @@ BOOL SSPHAL_IsPowerSave(void);
 	<li>NAK Packet</li>
 </ol>
 
-<h4>Data Packet</h4>
+### Data Packet
 
 <p>Data packets transport data to a destination socket. The client data portion contains any data whatsoever; there is no structure to the data other than what the two communication parities agree upon. The sender&rsquo;s data packet is routed to the destination socket. The receiver processes the incoming data on the <strong>SSP_Listen()</strong> registered callback.</p>
 
-<h4>ACK Packet</h4>
+### ACK Packet
 
 <p>An ACK (acknowledge) packet is sent in response to a data packet.&nbsp;ACK indicates successful reception of the data packet. The SSP layer does not route ACK packets to the client.</p>
 
 <p>The ACK packet acknowledges a single data packet. The data packet to be acknowledged is identified using the transaction ID. Once the receiver SSP acknowledges the data packet, the sender SSP removes the outgoing message from the send queue.</p>
 
-<h4>NAK Packet</h4>
+### NAK Packet
 
 <p>A NAK (negative-acknowledge) packet is sent in response to a data packet. NAK indicates unsuccessful reception of the data packet. NAK responses will trigger a retry of the message indicated by the transaction ID. After a certain number of retries, the failure will be returned to the caller.</p>
 
@@ -431,11 +474,11 @@ BOOL SSPHAL_IsPowerSave(void);
 	<li>A listener callback is not registered on the destination socket. This means the message was received correctly, but the application isn&rsquo;t listening to the socket.</li>
 </ul>
 
-<h3>Parsing</h3>
+## Parsing
 
 <p>Each packet contains two synchronization bytes: 0xBE and 0xEF. The parser uses these bytes to determine when the packet header starts. The header has an 8-bit checksum used by the parser to determine if the remaining packet should be parsed or not. The client data size is used to parse the packet data and footer. The 16-bit CRC packet footer allows error checking the entire packet before forwarding to the registered client.</p>
 
-<h3>Queuing</h3>
+## Queuing
 
 <p>SSP stores each data packet in a queue for asynchronous transmission. The data packet is removed from the send queue if the receiver ACK&rsquo;s the packet or all timeout retries have been exhausted.</p>
 
@@ -445,23 +488,23 @@ BOOL SSPHAL_IsPowerSave(void);
 
 <p><a href="https://github.com/endurodave/C_Allocator">A C-language Fixed Block Memory Allocator</a></p>
 
-<h3>Sequence Control</h3>
+## Sequence Control
 
 <p>The transaction ID is the message number used to identify packets. This value is incremented by 1 on each new data packet sent and wraps to 0 when 255 is reached. The recipient sends the received data packet transaction ID within the ACK or NAK packet.</p>
 
-<h3>Duplicate Packets</h3>
+## Duplicate Packets
 
 <p>The SSP layer protects against clients receiving duplicate data packets. The SSP layer keeps track of the last transaction ID. If another packet with the same transaction ID arrives, the message is considered a duplicate not forwarded to the registered client.</p>
 
-<h3>Timeouts and Retries</h3>
+## Timeouts and Retries
 
 <p>The SSP layer handles timeout conditions. Every sent message must receive an ACK. If after a short duration an ACK is not received, the SSP layer retries sending. After a predetermined number of unsuccessful attempts, the sending client is notified of the communication timeout failure.</p>
 
-<h3>Flow Control</h3>
+## Flow Control
 
 <p>SSP does not use software-based flow control. Optionally the application-specific HAL (<strong>ssp_hal.h</strong>) implementation may implement hardware or software based flow control at the driver level as deemed necessary.</p>
 
-<h3>Sending Packets</h3>
+## Sending Packets
 
 <p>Each call to <code>SSP_Send()</code> or <code>SSP_SendMultiple()</code> adds an outgoing message to a send queue if the return value is <code>SSP_SUCCESS</code>. Otherwise, the message was not queued for transmission.</p>
 
@@ -496,7 +539,7 @@ err = SSP_SendMultiple(1, 0, 2, sendArr, sendArrSize);
 
 <p>SSP sends the next message in queue when the previous message is ACK&#39;ed or a timeout error occurs.&nbsp;</p>
 
-<h3>Receiving Packets</h3>
+## Receiving Packets
 
 <p>Clients register with SSP to receive asynchronous callbacks using the <code>SSP_Listen()</code> API. The API accepts a callback function pointer and a socket ID. When a packet successfully arrives on the specified socket, the client callback function is called.</p>
 
@@ -504,7 +547,7 @@ err = SSP_SendMultiple(1, 0, 2, sendArr, sendArrSize);
 
 <p>The client callbacks occur on the context that calls <code>SSP_Process()</code>. During the callback, the client should do something quick and not block. For instance, post a message to another thread to be handled asynchronously.</p>
 
-<h3>Error Handling</h3>
+## Error Handling
 
 <p>Errors are reported to the application in a few different ways:</p>
 
@@ -545,7 +588,7 @@ typedef enum
 } SspErr;
 ```
 
-<h2>Porting</h2>
+# Porting
 
 <p>Implement each function within <strong>ssp_hal.h</strong>, <strong>ssp_osal.h</strong> and <strong>ssp_fault.h</strong> based on your application. A few implementations are included.</p>
 
@@ -565,17 +608,17 @@ typedef enum
 	<li><strong>ssp_osal_windows.c</strong> &ndash; implements the OS abstraction for Windows.</li>
 </ul>
 
-<h3>Arduino</h3>
+## Arduino
 
 <p>The <strong>example\arduino</strong> directory contains the <strong>arduino.ino</strong> sketch file. This file contains the &ldquo;main&rdquo; application source code.</p>
 
 <p>The Arduino IDE requires the source code in a common directory. The <strong>copysrc.bat</strong> copies the source files to a common directory for easy build and testing.</p>
 
-<h2>Serialize</h2>
+# Serialize
 
 The <b>example_serialize.cpp</b> shows how to use a simple C++ binary message serializer to encode C++ objects for transport over SSP (or any other protocol).
 
-<h2>Resources</h2>
+# Resources
 
 <p>The SSP library is compact. Arduino Sketch reports 9k&nbsp;program storage space for the entire application (about 3% of program space on my ATmega 2560). Of that, SSP consumes about 2.5k.</p>
 
@@ -583,14 +626,14 @@ The <b>example_serialize.cpp</b> shows how to use a simple C++ binary message se
 
 <p><img src="SSP_Map.jpg" style="width: 350px; height: 404px" /></p>
 
-<h2>Referenced Articles</h2>
+# Referenced Articles
 
 <ul>
 	<li><a href=https://github.com/endurodave/C_Allocator">A Fixed Block Allocator in C</a>&nbsp;- by David Lafreniere</li>
     	<li><a href="https://github.com/endurodave/MessageSerialize">A Binary Message Serializer in C++</a>&nbsp;- by David Lafreniere</li>
 </ul>
 
-<h2>Conclusion</h2>
+# Conclusion
 
 <p>Creating a software protocol from scratch is time consuming and difficult. SSP is a portable library for socket-like communications on non-Ethernet based hardware communication interfaces for use on embedded or PC-based systems.</p>
 
