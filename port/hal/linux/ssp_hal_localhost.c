@@ -1,5 +1,10 @@
 // Implements the SSP HAL (hardware abstraction layer) interface within ssp_hal.h 
 // using memory buffers to simulate communication between sockets for testing SSP
+
+#include "ssp_opt.h"
+
+#if (SSP_HAL == SSP_HAL_LOCALHOST)
+
 #include <errno.h>
 #include<unistd.h>
 #include <stdio.h>
@@ -266,3 +271,4 @@ BOOL SSPHAL_IsPowerSave(void) {
    return powerSave;
 }
 
+#endif

@@ -4,15 +4,16 @@
 #define SSP_OPT_H
 
 // Defined OSAL modules
-#define SSP_OSAL_NO_OS  1
-#define SSP_OSAL_WIN    2
-#define SSP_OSAL_STD    3
-#define SSP_OSAL_UNIX    4
+#define SSP_OSAL_NO_OS  1       // No operating system
+#define SSP_OSAL_WIN    2       // Windows operating system
+#define SSP_OSAL_STD    3       // C++ standard library
+#define SSP_OSAL_UNIX    4      // Linux/Unix operating system
 
 // Defined HAL modules
-#define SSP_HAL_MEM_BUF 1
-#define SSP_HAL_WIN     2
-#define SSP_HAL_ARDUINO 3
+#define SSP_HAL_MEM_BUF 1       // Memory buffers simulate communication
+#define SSP_HAL_WIN     2       // Windows serial communication
+#define SSP_HAL_ARDUINO 3       // Arduino serial communication
+#define SSP_HAL_LOCALHOST 4     // Linux localhost communication
 
 // Users can override ssp_opt.h with their own configuration by defining
 // SSP_CONFIG as a header file to include (-DSSP_CONFIG=ssp_opt_cus.h).
@@ -60,15 +61,15 @@
 // GCC build options
 #ifdef BARE_METAL
 #define SSP_OSAL        SSP_OSAL_NO_OS
-#define SSP_HAL         SSP_OSAL_NO_OS
+#define SSP_HAL         SSP_HAL_MEM_BUF
 #endif
 
 // GCC build options
 #if defined __unix__
 #define SSP_OSAL        SSP_OSAL_UNIX
 #define SSP_HAL         SSP_HAL_MEM_BUF
+//#define SSP_HAL         SSP_HAL_LOCALHOST
 #endif
-
 
 typedef enum
 {

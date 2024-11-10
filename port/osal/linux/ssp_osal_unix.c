@@ -10,7 +10,7 @@
 #include <pthread.h>
 
 #include <time.h>
-#include <timeop.h>
+//#include <timeop.h>
 
 #include "ssp_osal.h"
 #include "ssp_fault.h"
@@ -89,9 +89,25 @@ BOOL SSPOSAL_LockPut(SSP_OSAL_HANDLE handle)
     return TRUE;
 }
 
+static UINT32 get_milliseconds() 
+{
+    struct timeval tv;
+    
+    // Get the current time
+    if (gettimeofday(&tv, NULL) == -1) {
+        perror("gettimeofday");
+        return 0; // Return 0 if there was an error
+    }
+
+    // Convert seconds to milliseconds and add microseconds (microseconds / 1000)
+    return (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+}
+
 UINT32 SSPOSAL_GetTickCount(void)
 {
-	return (UINT32)millis(0);
+	//return (UINT32)millis(0);
+	
+	return get_milliseconds();
 }
 
 #endif  //#if (SSP_OSAL == SSP_OSAL_UNIX)

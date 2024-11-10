@@ -1,24 +1,54 @@
-cmake_minimum_required(VERSION 3.6)
-project(SimpleSocketProtocol)
-set(CMAKE_VERBOSE_MAKEFILE ON)
+# Example CMake command line to create project build files:
+#
+# *** Windows ***
+# cmake -G "Visual Studio 17 2022" -A Win32 -B ../SimpleSocketProtocolBuild -S .
+#
+# *** Linux ***
+# cmake -G "Unix Makefiles" -B ../SimpleSocketProtocolBuild -S .
+#
+# See ssp_opt.h for HAL and OSAL build options.
 
+# Specify the minimum CMake version required
+cmake_minimum_required(VERSION 3.10)
 
-set(SRC_DIR "${PROJECT_SOURCE_DIR}/ssp")
+# Project name and language (C or C++)
+project(SimpleSocketProtocol VERSION 1.0 LANGUAGES C CXX)
 
-# Aux dirs
-aux_source_directory("${SRC_DIR}" ${PROJECT_NAME}_SOURCES)
+# Set C++ standard
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-set(HEADERS
+# Collect all .cpp and *.h source files in the current directory
+file(GLOB SOURCES "${CMAKE_SOURCE_DIR}/*.cpp" "${CMAKE_SOURCE_DIR}/*.h")
 
+# Add subdirectories to include path
+include_directories( 
+    ${CMAKE_SOURCE_DIR}/example
+    ${CMAKE_SOURCE_DIR}/port
+    ${CMAKE_SOURCE_DIR}/ssp
 )
-set(SOURCE_FILES
 
+# Add an executable target
+add_executable(SimpleSocketProtocolApp ${SOURCES})
+
+if (ENABLE_ALLOCATOR)
+    add_compile_definitions(USE_ALLOCATOR)
+endif()
+
+# Add subdirectories to build
+add_subdirectory(example)
+add_subdirectory(port)
+add_subdirectory(ssp)
+
+target_link_libraries(SimpleSocketProtocolApp PRIVATE 
+    ExampleLib
+    PortLib
+    SSPLib
 )
 
-file(GLOB HDR_PRODUCT "${SRC_DIR}/*.h")
-list(APPEND HEADERS ${HDR_PRODUCT})     
 
 
-add_library(SimpleSocketProtocol STATIC ${SOURCE_FILES} ${${PROJECT_NAME}_SOURCES} ${HEADERS})
-target_include_directories(SimpleSocketProtocol PUBLIC ${PROJECT_SOURCE_DIR} ${SRC_DIR})
+
+
+
  

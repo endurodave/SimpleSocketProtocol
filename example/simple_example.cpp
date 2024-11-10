@@ -7,6 +7,7 @@
 #include "ssp.h"
 #include <stdio.h>
 #include <string.h>
+#include <iostream>
 #include "ssp_fault.h"
 
 static void SspErrorHandler(SspErr err)
@@ -86,7 +87,7 @@ int simple_example()
     UINT16 sendArrSize[2];
     const void* sendArr[2];
 
-    while (1)
+    while (cntr < 1000)
     {
         snprintf(send, 32, "CNTR=%d", cntr++);
 

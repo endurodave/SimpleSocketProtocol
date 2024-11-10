@@ -1,5 +1,7 @@
 # Simple Socket Protocol for Embedded Systems
 
+A simple C language socket-based communication transport protocol ported to Windows, Linux, Arduino and embedded systems. Any hardware transport is supported such as serial UART, SPI, CAN bus, etc... 
+
 Originally published on CodeProject at: <a href="https://www.codeproject.com/Articles/5321271/Simple-Socket-Protocol-for-Embedded-Systems"><strong>Simple Socket Protocol for Embedded Systems</strong></a>
 
 David Lafreniere, Jan 2022.
@@ -10,6 +12,9 @@ David Lafreniere, Jan 2022.
 - [Table of Contents](#table-of-contents)
 - [Introduction](#introduction)
   - [What is SSP?](#what-is-ssp)
+- [Project Build](#project-build)
+  - [Windows Visual Studio](#windows-visual-studio)
+  - [Linux Make](#linux-make)
 - [Overview](#overview)
 - [Using the Code](#using-the-code)
   - [Usage Notes](#usage-notes)
@@ -116,6 +121,24 @@ David Lafreniere, Jan 2022.
 <p>SSP supports a maximum 256-byte packet size. 10-byte header, 244-byte maximum payload, and 2-byte CRC.</p>
 
 <p>SSP was not designed by committee and does not conform to any standard.</p>
+
+# Project Build
+
+<a href="https://www.cmake.org">CMake</a> is used to create the build files. CMake is free and open-source software. Windows, Linux and other toolchains are supported. Example CMake console commands located inside <code>CMakeLists.txt</code>.
+
+See `ssp_opt.h` to configure the sample application build options for each target platform.
+
+## Windows Visual Studio
+
+<code>cmake -G "Visual Studio 17 2022" -A Win32 -B ../SimpleSocketProtocolBuild -S .</code>
+
+After executed, open the Visual Studio project from within the <code>SimpleSocketProtocolBuild</code> directory.
+
+## Linux Make
+
+<code>cmake -G "Unix Makefiles" -B ../SimpleSocketProtocolBuild -S .</code>
+
+After executed, build the software from within the <code>SimpleSocketProtocolBuild</code> directory using the command <code>make</code>. Run the console app using <code>./SimpleSocketProtocolApp</code>.
 
 # Overview
 
@@ -367,7 +390,7 @@ void SSPHAL_PowerSave(BOOL enable);
 BOOL SSPHAL_IsPowerSave(void);
 ```
 
-<p>Each abstraction interface must be implemented for a specific target. Example implementations for Windows, Arduino, and C++ standard library are located within the <strong>port </strong>directory.</p>
+<p>Each abstraction interface must be implemented for a specific target. Example implementations for Windows, Linux, Arduino, and C++ standard library are located within the <strong>port </strong>directory.</p>
 
 <p>The HAL interfaces to the communication driver. <code>SSPHAL_PortSend()</code> sends data and <code>SSPHAL_PortRecv()</code> reads data. Typically the driver uses internal send/receive buffers to facilitate data communication. The driver details are application specific. Maybe the driver is interrupt driven sending/receiving one or more bytes per interrupt. Or perhaps DMA transfer is utilized. Regardless, the HAL abstracts those details from the SSP library.</p>
 
@@ -597,6 +620,7 @@ typedef enum
 <ul>
 	<li><strong>ssp_hal_arduino.cpp</strong> &ndash; implements serial communication on an Arduino.</li>
 	<li><strong>ssp_hal_windows.c</strong> &ndash; implements serial communication on Windows.</li>
+    <li><strong>ssp_hal_localhost.c</strong> &ndash; implements localhost communication on Linux.</li>
 	<li><strong>ssp_hal_mem_buf.c</strong> &ndash; implements communication via memory buffers. Allows SSP testing on a PC without actual communication hardware.</li>
 </ul>
 
@@ -606,11 +630,12 @@ typedef enum
 	<li><strong>ssp_osal_no_os.c</strong> &ndash; implements the OS abstraction when not using an OS.</li>
 	<li><strong>ssp_osal_std.cpp</strong> &ndash; implements the OS abstraction using the C++ standard library.</li>
 	<li><strong>ssp_osal_windows.c</strong> &ndash; implements the OS abstraction for Windows.</li>
+    <li><strong>ssp_osal_unix.c</strong> &ndash; implements the OS abstraction for Linux.</li>
 </ul>
 
 ## Arduino
 
-<p>The <strong>example\arduino</strong> directory contains the <strong>arduino.ino</strong> sketch file. This file contains the &ldquo;main&rdquo; application source code.</p>
+<p>The <strong>arduino</strong> directory contains the <strong>arduino.ino</strong> sketch file. This file contains the &ldquo;main&rdquo; application source code.</p>
 
 <p>The Arduino IDE requires the source code in a common directory. The <strong>copysrc.bat</strong> copies the source files to a common directory for easy build and testing.</p>
 
