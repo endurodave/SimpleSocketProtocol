@@ -8,9 +8,11 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <stdio.h>
 
 #include <time.h>
 //#include <timeop.h>
+#include <sys/time.h>
 
 #include "ssp_osal.h"
 #include "ssp_fault.h"
