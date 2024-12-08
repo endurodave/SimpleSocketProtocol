@@ -1,3 +1,8 @@
+![License MIT](https://img.shields.io/github/license/BehaviorTree/BehaviorTree.CPP?color=blue)
+[![conan Ubuntu](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_ubuntu.yml/badge.svg)](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_ubuntu.yml)
+[![conan Ubuntu](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_clang.yml/badge.svg)](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_clang.yml)
+[![conan Windows](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_windows.yml/badge.svg)](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_windows.yml)
+
 # Simple Socket Protocol for Embedded Systems
 
 A simple C language socket-based communication transport protocol ported to Windows, Linux, Arduino and embedded systems. Any hardware transport is supported such as serial UART, SPI, CAN bus, etc... 

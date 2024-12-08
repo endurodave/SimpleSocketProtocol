@@ -1,0 +1,26 @@
+name: Ubuntu
+
+on:
+  push:
+    branches:
+      - main  # Trigger on push to 'main' branch
+  pull_request:
+    branches:
+      - main  # Trigger on pull request targeting 'main' branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # Use Ubuntu environment for the build
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2  # Checkout the repository code
+
+    - name: Configure CMake
+      run: cmake -S . -B Build  # Configure CMake to generate build files in 'Build' directory
+
+    - name: Build
+      run: cmake --build Build  # Build the project using CMake
+
+    - name: Run DelegateApp
+      run: ./Build/DelegateApp  # Run the built executable
