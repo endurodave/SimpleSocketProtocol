@@ -1,10 +1,10 @@
 # Example CMake command line to create project build files:
 #
 # *** Windows ***
-# cmake -G "Visual Studio 17 2022" -A Win32 -B Build -S .
+# cmake -G "Visual Studio 17 2022" -A Win32 -B build -S .
 #
 # *** Linux ***
-# cmake -G "Unix Makefiles" -B Build -S .
+# cmake -G "Unix Makefiles" -B build -S .
 #
 # See ssp_opt.h for HAL and OSAL build options.
 
