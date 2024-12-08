@@ -135,15 +135,15 @@ See `ssp_opt.h` to configure the sample application build options for each targe
 
 ## Windows Visual Studio
 
-<code>cmake -G "Visual Studio 17 2022" -A Win32 -B ../SimpleSocketProtocolBuild -S .</code>
+<code>cmake -G "Visual Studio 17 2022" -A Win32 -B build -S .</code>
 
-After executed, open the Visual Studio project from within the <code>SimpleSocketProtocolBuild</code> directory.
+After executed, open the Visual Studio project from within the <code>build</code> directory.
 
 ## Linux Make
 
-<code>cmake -G "Unix Makefiles" -B ../SimpleSocketProtocolBuild -S .</code>
+<code>cmake -G "Unix Makefiles" -B build -S .</code>
 
-After executed, build the software from within the <code>SimpleSocketProtocolBuild</code> directory using the command <code>make</code>. Run the console app using <code>./SimpleSocketProtocolApp</code>.
+After executed, build the software from within the <code>build</code> directory using the command <code>make</code>. Run the console app using <code>./SimpleSocketProtocolApp</code>.
 
 # Overview
 
