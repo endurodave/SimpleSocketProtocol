@@ -52,6 +52,7 @@ David Lafreniere, Jan 2022.
 - [Porting](#porting-1)
   - [Arduino](#arduino)
 - [Serialize](#serialize)
+- [Star History](#star-history)
 - [Resources](#resources)
 - [Referenced Articles](#referenced-articles)
 - [Conclusion](#conclusion)
@@ -647,6 +648,12 @@ typedef enum
 # Serialize
 
 The <b>example_serialize.cpp</b> shows how to use a simple C++ binary message serializer to encode C++ objects for transport over SSP (or any other protocol).
+
+# Star History
+
+Find this repository useful? Consider giving it a star!
+
+[![Star History Chart](https://api.star-history.com/svg?repos=endurodave/SimpleSocketProtocol&type=Date)](https://star-history.com/#endurodave/SimpleSocketProtocol&Date)
 
 # Resources
 
