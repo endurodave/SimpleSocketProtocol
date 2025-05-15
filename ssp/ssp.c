@@ -92,8 +92,19 @@ typedef struct
     SspData* sspDataForAckNak;
 } SspComObj;
 
+
+/*
+SendTransId SSP transport protocol should be different from 0 (random value) after initialization (restart process).
+A weakness of the SSP protocol is that it is always started at 0.
+If the process restarts on the host side after the first transfer,
+is discarded on the embedded side if another protocol with a transfer counter of 0 is received after the first protocol.
+
+qick fix - never reset the counter to 0 after initialization.
+*/
+static UINT8 g_u8SendTransId = 0U;
+
 // Private module data
-static SspComObj self;
+static SspComObj self = {0};
 
 // Private functions
 static SendData* AllocSendData(UINT16 dataSize);
@@ -668,6 +679,11 @@ void SSP_Term(void)
     SSPOSAL_LockDestroy(self.hSspLock);
     self.hSspLock = SSP_OSAL_INVALID_HANDLE_VALUE;
     SSPCOM_Term();
+    self.initOnce = FALSE;
+
+#ifdef USE_FB_ALLOCATOR
+    ALLOC_Term();
+#endif
 }
 
 /// Open a socket on a port. Each socket may only be opened one time. Socket ID's
@@ -771,7 +787,8 @@ SspErr SSP_SendMultiple(UINT8 srcSocketId, UINT8 destSocketId, INT16 numData,
         sendData->sspData->packet.header.bodySize = (UINT8)dataSize;
         sendData->sspData->packet.header.srcId = srcSocketId;
         sendData->sspData->packet.header.destId = destSocketId;
-        sendData->sspData->packet.header.transId = self.sendTransId++;
+        self.sendTransId = g_u8SendTransId++;
+        sendData->sspData->packet.header.transId = self.sendTransId;
         sendData->sspData->packet.header.type = MSG_TYPE_DATA;
 
         // Insert the outgoing message into the list
