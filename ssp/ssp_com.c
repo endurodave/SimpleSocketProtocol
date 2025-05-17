@@ -70,7 +70,7 @@ typedef struct
 } SspComObj;
 
 // Private module data
-static SspComObj self;
+static SspComObj self = {0};
 
 // Private functions
 static UINT8 Checksum(const UINT8* data, UINT16 dataSize);
@@ -407,6 +407,7 @@ void SSPCOM_Term(void)
 
     SSPHAL_Term();
     SSPOSAL_Term();
+    self.initOnce = FALSE;
 }
 
 /// Allocate packet body data.
