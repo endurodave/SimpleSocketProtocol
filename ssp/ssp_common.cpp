@@ -39,7 +39,7 @@ void SSP_Trace(const char* str)
 #ifdef ARDUINO
     Serial.println(str);
 #else
-    printf(str);
+    printf("%s", str);
     printf("\n");
 #endif
 
