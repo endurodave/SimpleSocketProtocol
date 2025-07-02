@@ -18,8 +18,6 @@ David Lafreniere, Jan 2022.
 - [Introduction](#introduction)
   - [What is SSP?](#what-is-ssp)
 - [Project Build](#project-build)
-  - [Windows Visual Studio](#windows-visual-studio)
-  - [Linux Make](#linux-make)
 - [Overview](#overview)
 - [Using the Code](#using-the-code)
   - [Usage Notes](#usage-notes)
@@ -129,21 +127,14 @@ David Lafreniere, Jan 2022.
 
 # Project Build
 
-<a href="https://www.cmake.org">CMake</a> is used to create the build files. CMake is free and open-source software. Windows, Linux and other toolchains are supported. Example CMake console commands located inside <code>CMakeLists.txt</code>.
+[CMake](https://cmake.org/) is used to create the project build files on any Windows or Linux machine. 
+
+1. Clone the repository.
+2. From the repository root, run the following CMake command:   
+   `cmake -B Build .`
+3. Build and run the project within the `Build` directory. 
 
 See `ssp_opt.h` to configure the sample application build options for each target platform.
-
-## Windows Visual Studio
-
-<code>cmake -G "Visual Studio 17 2022" -A Win32 -B build -S .</code>
-
-After executed, open the Visual Studio project from within the <code>build</code> directory.
-
-## Linux Make
-
-<code>cmake -G "Unix Makefiles" -B build -S .</code>
-
-After executed, build the software from within the <code>build</code> directory using the command <code>make</code>. Run the console app using <code>./SimpleSocketProtocolApp</code>.
 
 # Overview
 
