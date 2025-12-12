@@ -69,7 +69,7 @@ BOOL SSPOSAL_LockPut(SSP_OSAL_HANDLE handle)
 UINT32 SSPOSAL_GetTickCount(void)
 {
     using namespace std::chrono;
-    auto mslonglong = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    auto mslonglong = duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
     UINT32 mslong = (UINT32)mslonglong;
     return mslong;
 }
