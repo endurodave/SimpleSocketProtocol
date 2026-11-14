@@ -1,7 +1,7 @@
-![License MIT](https://img.shields.io/github/license/BehaviorTree/BehaviorTree.CPP?color=blue)
-[![conan Ubuntu](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_ubuntu.yml/badge.svg)](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_ubuntu.yml)
-[![conan Ubuntu](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_clang.yml/badge.svg)](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_clang.yml)
-[![conan Windows](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_windows.yml/badge.svg)](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_windows.yml)
+![License MIT](https://img.shields.io/github/license/endurodave/SimpleSocketProtocol?color=blue)
+[![Ubuntu](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_ubuntu.yml/badge.svg)](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_ubuntu.yml)
+[![Clang](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_clang.yml/badge.svg)](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_clang.yml)
+[![Windows](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_windows.yml/badge.svg)](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_windows.yml)
 
 # Simple Socket Protocol for Embedded Systems
 
@@ -49,6 +49,7 @@ David Lafreniere, Jan 2022.
   - [Error Handling](#error-handling)
 - [Porting](#porting-1)
   - [Arduino](#arduino)
+  - [PlatformIO](#platformio)
 - [Serialize](#serialize)
 - [Resources](#resources)
 - [Referenced Articles](#referenced-articles)
@@ -394,7 +395,7 @@ BOOL SSPHAL_IsPowerSave(void);
 
 <p>The layer diagram below shows the major components.</p>
 
-<p><img src="SSP_Diagram2.jpg" style="width: 250px; height: 306px" /></p>
+<p><img src="https://raw.githubusercontent.com/endurodave/SimpleSocketProtocol/main/SSP_Diagram2.jpg" style="width: 250px; height: 306px" /></p>
 
 <ul>
 	<li>Application &ndash; the application code.</li>
@@ -458,7 +459,7 @@ BOOL SSPHAL_IsPowerSave(void);
 
 <p>The SSP packet is structured as shown below:</p>
 
-<p><img src="SSP_Packet2.jpg" style="width: 400px; height: 359px" /></p>
+<p><img src="https://raw.githubusercontent.com/endurodave/SimpleSocketProtocol/main/SSP_Packet2.jpg" style="width: 400px; height: 359px" /></p>
 
 <p>Use <code>SSP_Send()</code> or <code>SSP_SendMultiple()</code> to send data. All sending is asynchronous. Data is queued to be sent during <code>SSP_Process()</code>. A transmission failure is reported asynchronously to the client on the <code>SSP_Listen()</code> registered callback function.</p>
 
@@ -635,6 +636,22 @@ typedef enum
 
 <p>The Arduino IDE requires the source code in a common directory. The <strong>copysrc.bat</strong> copies the source files to a common directory for easy build and testing.</p>
 
+## PlatformIO
+
+SSP is a PlatformIO library. Add it to `platformio.ini`:
+
+```ini
+lib_deps = SimpleSocketProtocol
+```
+
+On Arduino the HAL uses `Serial1` (`SSP_PORT1`) and `Serial2` (`SSP_PORT2`), so pick a board with at least three hardware UARTs, such as the Mega 2560, ESP32 or Due. The Uno has only `Serial` and won't build.
+
+To change ports, sockets, timeouts or sizes, copy `ssp/ssp_opt.h` to your project's `include/` folder under a new name (e.g. `ssp_opt_cus.h`, as in `port/ssp_opt_cus.h`) and point SSP at it:
+
+```ini
+build_flags = -DSSP_CONFIG=ssp_opt_cus.h
+```
+
 # Serialize
 
 The <b>example_serialize.cpp</b> shows how to use a simple C++ binary message serializer to encode C++ objects for transport over SSP (or any other protocol).
@@ -645,7 +662,7 @@ The <b>example_serialize.cpp</b> shows how to use a simple C++ binary message se
 
 <p>The memory map is shown below. Any &ldquo;ssp&rdquo; named data is required by the SSP library. Adjust the <strong>SSP_MAX_PACKET_SIZE </strong>and <strong>SSP_MAX_MESSAGES </strong>build options to increase/decrease memory utilization.</p>
 
-<p><img src="SSP_Map.jpg" style="width: 350px; height: 404px" /></p>
+<p><img src="https://raw.githubusercontent.com/endurodave/SimpleSocketProtocol/main/SSP_Map.jpg" style="width: 350px; height: 404px" /></p>
 
 # Referenced Articles
 
