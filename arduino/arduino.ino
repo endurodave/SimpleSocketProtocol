@@ -79,6 +79,7 @@ void setup() {
   // Register for callbacks
   err = SSP_Listen(0, &SspCallbackSocket0, NULL);
   err = SSP_Listen(1, &SspCallbackSocket1, NULL);
+  (void)err;
 }
 
 // the loop function runs over and over again forever
@@ -90,7 +91,7 @@ void loop() {
 
   SspErr err;
   
-  snprintf(send, 32, "CNTR=%d\0", cntr++);
+  snprintf(send, 32, "CNTR=%d", cntr++);
 
   // Send data
   err = SSP_Send(0, 1, send, UINT16(strlen(send))+1); 
@@ -103,6 +104,7 @@ void loop() {
 
   // Send data
   err = SSP_SendMultiple(1, 0, 2, sendArr, sendArrSize);
+  (void)err;
 
   do
   {

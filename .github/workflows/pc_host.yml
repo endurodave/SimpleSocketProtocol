@@ -1,0 +1,49 @@
+name: PC Host
+
+# Builds examples/pc-host (SSP over a serial port) on Linux and Windows.
+# On Linux it also runs a link test: two ssp-pc-host instances, one in
+# --device mode, talk SSP over a virtual serial pair made by socat, through the
+# termios serial HAL.
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+# Least privilege for GITHUB_TOKEN: these jobs only check out code.
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v7
+
+    - name: Configure
+      run: cmake -S examples/pc-host -B build -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build
+      run: cmake --build build --config Release
+
+    - name: Link test over a virtual serial pair (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get install -y socat
+        socat pty,raw,echo=0,link=/tmp/ssp-a pty,raw,echo=0,link=/tmp/ssp-b &
+        sleep 1
+        ./build/ssp-pc-host --device /tmp/ssp-b 30 &
+        sleep 0.5
+        ./build/ssp-pc-host /tmp/ssp-a 200

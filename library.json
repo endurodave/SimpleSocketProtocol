@@ -1,21 +1,73 @@
 {
   "name": "SimpleSocketProtocol",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Simple Socket Protocol (SSP): lightweight C binary protocol for UART/serial links between embedded CPUs. Sockets, ACK/NAK, retries, CRC, fixed-block allocator, portable HAL/OSAL.",
-  "keywords": ["serial", "uart", "protocol", "communication", "embedded", "c", "arduino"],
-  "repository": { "type": "git", "url": "https://github.com/endurodave/SimpleSocketProtocol.git" },
-  "authors": [{ "name": "David Lafreniere", "url": "https://github.com/endurodave", "maintainer": true }],
+  "keywords": [
+    "serial",
+    "uart",
+    "protocol",
+    "communication",
+    "embedded",
+    "c",
+    "arduino"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/endurodave/SimpleSocketProtocol.git"
+  },
+  "authors": [
+    {
+      "name": "David Lafreniere",
+      "url": "https://github.com/endurodave",
+      "maintainer": true
+    }
+  ],
   "license": "MIT",
   "homepage": "https://github.com/endurodave/SimpleSocketProtocol",
   "frameworks": "*",
   "platforms": "*",
   "headers": "ssp.h",
   "export": {
-    "include": ["ssp", "port", "example", "LICENSE", "README.md", "library.json"]
+    "include": [
+      "ssp",
+      "port",
+      "example",
+      "LICENSE",
+      "README.md",
+      "library.json",
+      "examples/platformio/ssp-demo/platformio.ini",
+      "examples/platformio/ssp-demo/src/main.cpp",
+      "examples/platformio/ssp-device/platformio.ini",
+      "examples/platformio/ssp-device/src/main.cpp",
+      "examples/pc-host/CMakeLists.txt",
+      "examples/pc-host/main.cpp"
+    ]
   },
   "build": {
     "srcDir": ".",
     "includeDir": "ssp",
-    "srcFilter": ["-<*>", "+<ssp/>", "+<port/>"]
-  }
+    "srcFilter": [
+      "-<*>",
+      "+<ssp/>",
+      "+<port/>"
+    ]
+  },
+  "examples": [
+    {
+      "name": "ssp-demo",
+      "base": "examples/platformio/ssp-demo",
+      "files": [
+        "platformio.ini",
+        "src/main.cpp"
+      ]
+    },
+    {
+      "name": "ssp-device",
+      "base": "examples/platformio/ssp-device",
+      "files": [
+        "platformio.ini",
+        "src/main.cpp"
+      ]
+    }
+  ]
 }
