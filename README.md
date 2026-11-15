@@ -3,6 +3,7 @@
 [![Clang](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_clang.yml/badge.svg)](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_clang.yml)
 [![Windows](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_windows.yml/badge.svg)](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_windows.yml)
 [![PlatformIO](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/platformio.yml/badge.svg)](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/platformio.yml)
+[![PC Host](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/pc_host.yml/badge.svg)](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/pc_host.yml)
 
 # Simple Socket Protocol for Embedded Systems
 
@@ -51,6 +52,7 @@ David Lafreniere, Jan 2022.
 - [Porting](#porting-1)
   - [Arduino](#arduino)
   - [PlatformIO](#platformio)
+  - [PC Host](#pc-host)
 - [Serialize](#serialize)
 - [Resources](#resources)
 - [Referenced Articles](#referenced-articles)
@@ -635,7 +637,7 @@ typedef enum
 
 <p>The <strong>arduino</strong> directory contains the <strong>arduino.ino</strong> sketch file. This file contains the &ldquo;main&rdquo; application source code.</p>
 
-<p>The Arduino IDE requires the source code in a common directory. The <strong>copysrc.bat</strong> copies the source files to a common directory for easy build and testing.</p>
+The Arduino IDE only builds files inside the sketch folder, so the SSP sources are copied in rather than kept there: run `copysrc.bat` (Windows) or `sh copysrc.sh` (Linux/macOS) in the `arduino` folder once before opening the sketch, and again after updating the repository. The copies are ignored by git. See [arduino/README.md](https://github.com/endurodave/SimpleSocketProtocol/blob/main/arduino/README.md). With PlatformIO, use the library and its examples instead (below).
 
 ## PlatformIO
 
@@ -645,7 +647,16 @@ SSP is in the [PlatformIO registry](https://registry.platformio.org/libraries/en
 lib_deps = endurodave/SimpleSocketProtocol@^1.1.1
 ```
 
-On Arduino the HAL uses `Serial1` (`SSP_PORT1`) and `Serial2` (`SSP_PORT2`), so pick a board with at least three hardware UARTs, such as the Mega 2560, ESP32 or Due. The Uno has only `Serial` and won't build. To run SSP without the UARTs, e.g. to try it before wiring anything, add `build_flags = -DSSP_HAL=SSP_HAL_MEM_BUF`: ports 1 and 2 are then looped back to each other in memory.
+On Arduino the HAL uses `Serial1` for `SSP_PORT1` and `Serial2` for `SSP_PORT2` by default. Build flags change that:
+
+| Flag | Effect |
+|---|---|
+| `-DSSP_ARDUINO_PORT1=Serial` | Serial object for port 1 (default `Serial1`); `Serial` is the USB port to a PC |
+| `-DSSP_ARDUINO_PORT2=Serial3` | Serial object for port 2 (default `Serial2`) |
+| `-DSSP_ARDUINO_NO_PORT2` | Use port 1 only, e.g. on a board with one UART |
+| `-DSSP_ARDUINO_BAUD=57600` | Baud rate (default 115200) |
+| `-DSSP_NO_TRACE` | No SSP trace text; required when the trace would go out on the SSP port (`Serial`) |
+| `-DSSP_HAL=SSP_HAL_MEM_BUF` | Loop ports 1 and 2 back to each other in memory: SSP without any UART, e.g. to try it before wiring anything |
 
 The [ssp-demo](https://github.com/endurodave/SimpleSocketProtocol/tree/main/examples/platformio/ssp-demo) example sends messages between socket 0 on port 1 and socket 1 on port 2 and checks that each one is received and ACKed. On a Mega 2560 or Due, connect `Serial1` and `Serial2` with two jumper wires (TX1 pin 18 to RX2 pin 17, TX2 pin 16 to RX1 pin 19), or use the `megaatmega2560_loopback` environment, which needs no wiring:
 
@@ -655,6 +666,8 @@ pio run -e megaatmega2560_loopback -t upload -t monitor
 pio run -e native -t exec
 ```
 
+The [ssp-device](https://github.com/endurodave/SimpleSocketProtocol/tree/main/examples/platformio/ssp-device) example is the board side of a link to a PC running the [PC host](#pc-host): SSP on one serial port (`Serial` over USB on the Mega 2560 and ESP32, USART6 through a USB-UART adapter on the STM32F4 Discovery), answering `info` and echoing every other message.
+
 Version 1.1.1 fixes ACK timeouts on 8-bit AVR boards (Uno, Mega): in 1.1.0 a message that wasn't ACKed was never retried or failed, so SSP stalled.
 
 To change ports, sockets, timeouts or sizes, copy `ssp/ssp_opt.h` to your project's `include/` folder under a new name (e.g. `ssp_opt_cus.h`, as in `port/ssp_opt_cus.h`) and point SSP at it:
@@ -662,6 +675,29 @@ To change ports, sockets, timeouts or sizes, copy `ssp/ssp_opt.h` to your projec
 ```ini
 build_flags = -DSSP_CONFIG=ssp_opt_cus.h
 ```
+
+## PC Host
+
+[examples/pc-host](https://github.com/endurodave/SimpleSocketProtocol/tree/main/examples/pc-host) is a console program that talks SSP over a serial port to a board running `ssp-device`, built from the same SSP sources as the board. It runs on Windows (`SSP_HAL_WIN`, a COM port) and Linux (`SSP_HAL_SERIAL_POSIX`, a termios tty). It connects (waiting out a board that resets when the port opens, like the Mega), prints the board's `info`, then sends numbered messages and checks that each is ACKed and echoed:
+
+```shell
+cmake -B build -S examples/pc-host
+cmake --build build --config Release
+build/Release/ssp-pc-host COM6 100        # Windows
+build/ssp-pc-host /dev/ttyACM0 100        # Linux
+```
+
+```
+Opened COM6
+Board: info mega2560 up 0s rx 1
+Board: info mega2560 up 1s rx 102
+100/100 echoed, round trip avg 15.5 ms, max 16.8 ms
+SSP PC host PASSED
+```
+
+`ssp-pc-host --device <port>` answers like `ssp-device` instead, so two PCs, or the two ends of a virtual serial pair (`socat` on Linux), can test the link without a board. The PC Host workflow does that on every push.
+
+In your own program, pick the port with `SSPHAL_SetPortName()` (and optionally `SSPHAL_SetBaudRate()`) from `ssp_hal_serial.h` before `SSP_Init()`.
 
 # Serialize
 

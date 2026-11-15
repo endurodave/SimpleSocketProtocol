@@ -1,9 +1,9 @@
 name: PlatformIO
 
-# Builds examples/platformio/ssp-demo for every board in its
-# platformio.ini, and runs the native build on the desktop. The example's
-# lib_deps points at this checkout, so each push tests the library as
-# PlatformIO users consume it (library.json, srcFilter).
+# Builds the PlatformIO examples for every board in their platformio.ini, and
+# runs the native build on the desktop. The examples' lib_deps point at this
+# checkout, so each push tests the library as PlatformIO users consume it
+# (library.json, srcFilter).
 
 on:
   push:
@@ -19,17 +19,26 @@ permissions:
 
 jobs:
   build:
-    name: ${{ matrix.env }}
+    name: ${{ matrix.example }} ${{ matrix.env }}
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
-        env: [megaatmega2560, megaatmega2560_loopback, due, esp32dev_loopback, native]
+        include:
+          - { example: ssp-demo, env: megaatmega2560 }
+          - { example: ssp-demo, env: megaatmega2560_loopback }
+          - { example: ssp-demo, env: disco_f407vg_loopback }
+          - { example: ssp-demo, env: due }
+          - { example: ssp-demo, env: esp32dev_loopback }
+          - { example: ssp-demo, env: native }
+          - { example: ssp-device, env: megaatmega2560 }
+          - { example: ssp-device, env: esp32dev }
+          - { example: ssp-device, env: disco_f407vg }
 
     defaults:
       run:
-        working-directory: examples/platformio/ssp-demo
+        working-directory: examples/platformio/${{ matrix.example }}
 
     steps:
     - name: Checkout code
@@ -41,7 +50,7 @@ jobs:
         path: |
           ~/.cache/pip
           ~/.platformio
-        key: pio-${{ matrix.env }}-${{ hashFiles('examples/platformio/ssp-demo/platformio.ini') }}
+        key: pio-${{ matrix.env }}-${{ hashFiles(format('examples/platformio/{0}/platformio.ini', matrix.example)) }}
 
     - name: Set up Python
       uses: actions/setup-python@v5

@@ -62,22 +62,22 @@ BOOL SSPOSAL_LockGet(SSP_OSAL_HANDLE handle, UINT32 timeout)
 
 	if (timeout != SSP_OSAL_WAIT_INFINITE)
 	{
-		struct timespec now, when;
-		timespec_get(&now, TIME_UTC);
-
-		UINT32 when_tv_sec,when_tv_nsec;
-
-		when_tv_sec = timeout/1000;				//Calc secs
-		when_tv_nsec = (timeout*1000)%1000; 	//Calc nanos
-
-		when.tv_sec = now.tv_sec + when_tv_sec;
-		when.tv_nsec = now.tv_nsec + when_tv_sec;
+		// Absolute deadline: now + timeout ms, with nanoseconds normalized
+		struct timespec when;
+		clock_gettime(CLOCK_REALTIME, &when);
+		when.tv_sec += timeout / 1000;
+		when.tv_nsec += (long)(timeout % 1000) * 1000000L;
+		if (when.tv_nsec >= 1000000000L)
+		{
+			when.tv_sec += 1;
+			when.tv_nsec -= 1000000000L;
+		}
 		if(pthread_mutex_timedlock((pthread_mutex_t*)handle, &when)!=0)
 			return FALSE;
 	}
 	else
 	{
-		if(pthread_mutex_lock(&g_mcritical) < 0)
+		if(pthread_mutex_lock((pthread_mutex_t*)handle) != 0)
 			return FALSE;
 	}
 

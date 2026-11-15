@@ -36,7 +36,11 @@
       "README.md",
       "library.json",
       "examples/platformio/ssp-demo/platformio.ini",
-      "examples/platformio/ssp-demo/src/main.cpp"
+      "examples/platformio/ssp-demo/src/main.cpp",
+      "examples/platformio/ssp-device/platformio.ini",
+      "examples/platformio/ssp-device/src/main.cpp",
+      "examples/pc-host/CMakeLists.txt",
+      "examples/pc-host/main.cpp"
     ]
   },
   "build": {
@@ -52,6 +56,14 @@
     {
       "name": "ssp-demo",
       "base": "examples/platformio/ssp-demo",
+      "files": [
+        "platformio.ini",
+        "src/main.cpp"
+      ]
+    },
+    {
+      "name": "ssp-device",
+      "base": "examples/platformio/ssp-device",
       "files": [
         "platformio.ini",
         "src/main.cpp"

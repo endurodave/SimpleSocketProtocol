@@ -1,35 +1,55 @@
-// Implements the SSP HAL (hardware abstraction layer) interface within ssp_hal.h 
-// for a Windows COM port
+// Implements the SSP HAL (hardware abstraction layer) interface within ssp_hal.h
+// for a Windows COM port. Select the COM port with SSPHAL_SetPortName()
+// (ssp_hal_serial.h) before SSP_Init(); defaults are COM1 and COM2.
 
 #include "ssp_opt.h"
 
 #if (SSP_HAL == SSP_HAL_WIN)
 
 #include "ssp_hal.h"
+#include "ssp_hal_serial.h"
 #include "ssp_osal.h"
 #include "ssp_fault.h"
+#include <stdio.h>
+#include <string.h>
 
 #define SSP_LOCK_WAIT_DEFAULT   5000
+#define PORT_NAME_MAX           32
 
 static BOOL powerSave = TRUE;
+static BOOL initDone = FALSE;
 static HANDLE m_hCommFile[SSP_MAX_PORTS];
 static SSP_OSAL_HANDLE hSerialLock[SSP_MAX_PORTS];
 static DWORD m_baudRate = CBR_115200;
+static char m_portName[SSP_MAX_PORTS][PORT_NAME_MAX] = { "", "COM1", "COM2" };
+
+void SSPHAL_SetPortName(SspPortId portId, const char* name)
+{
+    ASSERT_TRUE(portId >= SSP_PORT1 && portId < SSP_MAX_PORTS && name != NULL);
+    strncpy(m_portName[portId], name, PORT_NAME_MAX - 1);
+    m_portName[portId][PORT_NAME_MAX - 1] = 0;
+}
+
+void SSPHAL_SetBaudRate(UINT32 baudRate)
+{
+    m_baudRate = baudRate;
+}
 
 //----------------------------------------------------------------------------
-// SetBaudRate
+// ConfigureComPort
 //----------------------------------------------------------------------------
-static BOOL SetBaudRate(SspPortId portId, DWORD baudRate)
+static BOOL ConfigureComPort(SspPortId portId)
 {
-    ASSERT_TRUE(portId >= SSP_PORT1 && portId <= SSP_MAX_PORTS);
-    m_baudRate = baudRate;
+    ASSERT_TRUE(portId >= SSP_PORT1 && portId < SSP_MAX_PORTS);
 
     DCB dcb;
     FillMemory(&dcb, sizeof(dcb), 0);
+    dcb.DCBlength = sizeof(dcb);
     if (!GetCommState(m_hCommFile[portId], &dcb))
         return FALSE;
 
     dcb.BaudRate = m_baudRate;
+    dcb.fBinary = TRUE;
     dcb.fOutxCtsFlow = FALSE;
     dcb.fOutxDsrFlow = FALSE;
     dcb.fDtrControl = DTR_CONTROL_DISABLE;
@@ -45,10 +65,7 @@ static BOOL SetBaudRate(SspPortId portId, DWORD baudRate)
     dcb.Parity = NOPARITY;
     dcb.ByteSize = 8;
     if (!SetCommState(m_hCommFile[portId], &dcb))
-    {
-        DWORD e = GetLastError();
         return FALSE;
-    }
 
     COMMTIMEOUTS commtimeouts;
     if (GetCommTimeouts(m_hCommFile[portId], &commtimeouts) == 0)
@@ -68,6 +85,13 @@ static BOOL SetBaudRate(SspPortId portId, DWORD baudRate)
 
 void SSPHAL_Init(SspPortId portId)
 {
+    (void)portId;
+    // SSP calls this once per port: set up all ports on the first call only,
+    // so initializing port 2 doesn't drop port 1's open handle
+    if (initDone)
+        return;
+    initDone = TRUE;
+
     for (INT port = 0; port < SSP_MAX_PORTS; port++)
     {
         m_hCommFile[port] = INVALID_HANDLE_VALUE;
@@ -78,41 +102,40 @@ void SSPHAL_Init(SspPortId portId)
 
 void SSPHAL_Term(void)
 {
+    if (!initDone)
+        return;
+
+    for (INT port = SSP_PORT1; port < SSP_MAX_PORTS; port++)
+        SSPHAL_PortClose((SspPortId)port);
     for (INT port = 0; port < SSP_MAX_PORTS; port++)
     {
-        SSPHAL_PortClose(port);
         SSPOSAL_LockDestroy(hSerialLock[port]);
         hSerialLock[port] = SSP_OSAL_INVALID_HANDLE_VALUE;
     }
+    initDone = FALSE;
 }
 
 BOOL SSPHAL_PortOpen(SspPortId portId)
 {
-    ASSERT_TRUE(portId >= SSP_PORT1 && portId <= SSP_MAX_PORTS);
+    ASSERT_TRUE(portId >= SSP_PORT1 && portId < SSP_MAX_PORTS);
 
     if (SSPHAL_PortIsOpen(portId) == TRUE)
         return TRUE;
 
     SSPOSAL_LockGet(hSerialLock[portId], SSP_LOCK_WAIT_DEFAULT);
 
-    switch (portId)
-    {
-    case SSP_PORT1:
-        m_hCommFile[portId] = CreateFile(L"COM1:", GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
-        break;
-    case SSP_PORT2:
-        m_hCommFile[portId] = CreateFile(L"COM2:", GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
-        break;
-    default:
-        ASSERT();
-    }
+    // The \\.\ prefix is required for COM10 and above
+    char path[PORT_NAME_MAX + 8];
+    snprintf(path, sizeof(path), "\\\\.\\%s", m_portName[portId]);
+    m_hCommFile[portId] = CreateFileA(path, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
 
-    ASSERT_TRUE(m_hCommFile[portId] != INVALID_HANDLE_VALUE);
-
-    BOOL success = SetBaudRate(portId, m_baudRate);
+    BOOL success = FALSE;
+    if (m_hCommFile[portId] != INVALID_HANDLE_VALUE)
+        success = ConfigureComPort(portId);
 
     SSPOSAL_LockPut(hSerialLock[portId]);
 
+    // A missing or busy port is reported to the caller (SSP_PORT_OPEN_FAILED)
     if (success == FALSE)
         SSPHAL_PortClose(portId);
 
@@ -121,7 +144,7 @@ BOOL SSPHAL_PortOpen(SspPortId portId)
 
 void SSPHAL_PortClose(SspPortId portId)
 {
-    ASSERT_TRUE(portId >= SSP_PORT1 && portId <= SSP_MAX_PORTS);
+    ASSERT_TRUE(portId >= SSP_PORT1 && portId < SSP_MAX_PORTS);
 
     SSPOSAL_LockGet(hSerialLock[portId], SSP_LOCK_WAIT_DEFAULT);
 
@@ -150,7 +173,7 @@ BOOL SSPHAL_PortIsOpen(SspPortId portId)
 
 BOOL SSPHAL_PortSend(SspPortId portId, const char* buf, UINT16 bytesToSend)
 {
-    ASSERT_TRUE(portId >= SSP_PORT1 && portId <= SSP_MAX_PORTS);
+    ASSERT_TRUE(portId >= SSP_PORT1 && portId < SSP_MAX_PORTS);
 
     if (NULL == buf || 0 == bytesToSend)
         return FALSE;
@@ -160,9 +183,10 @@ BOOL SSPHAL_PortSend(SspPortId portId, const char* buf, UINT16 bytesToSend)
 
     if (m_hCommFile[portId] != INVALID_HANDLE_VALUE)
     {
-        DWORD bytesSent;
+        DWORD bytesSent = 0;
         success = WriteFile(m_hCommFile[portId], buf, bytesToSend, &bytesSent, NULL);
-        ASSERT_TRUE(bytesToSend == bytesSent);
+        if (bytesSent != bytesToSend)
+            success = FALSE;
     }
 
     SSPOSAL_LockPut(hSerialLock[portId]);
@@ -171,35 +195,33 @@ BOOL SSPHAL_PortSend(SspPortId portId, const char* buf, UINT16 bytesToSend)
 
 BOOL SSPHAL_PortRecv(SspPortId portId, char* buf, UINT16* bytesRead, UINT16 maxLen, UINT16 timeout)
 {
-    ASSERT_TRUE(portId >= SSP_PORT1 && portId <= SSP_MAX_PORTS);
+    ASSERT_TRUE(portId >= SSP_PORT1 && portId < SSP_MAX_PORTS);
 
     if (NULL == buf || NULL == bytesRead)
         return FALSE;
 
-    if (maxLen <= 0)
+    *bytesRead = 0;
+    if (maxLen == 0)
         return FALSE;
 
     SSPOSAL_LockGet(hSerialLock[portId], SSP_LOCK_WAIT_DEFAULT);
 
     BOOL success = FALSE;
-    *bytesRead = 0;
-
     COMMTIMEOUTS commtimeouts;
-    if (GetCommTimeouts(m_hCommFile[portId], &commtimeouts) == 0)
-        goto error;
-    commtimeouts.ReadTotalTimeoutConstant = timeout;
-    if (SetCommTimeouts(m_hCommFile[portId], &commtimeouts) == 0)
-        goto error;
-
-    // Read data from serial port
-    success = ReadFile(m_hCommFile[portId], buf, maxLen, (DWORD*)bytesRead, NULL);
+    if (m_hCommFile[portId] != INVALID_HANDLE_VALUE &&
+        GetCommTimeouts(m_hCommFile[portId], &commtimeouts) != 0)
+    {
+        commtimeouts.ReadTotalTimeoutConstant = timeout;
+        if (SetCommTimeouts(m_hCommFile[portId], &commtimeouts) != 0)
+        {
+            DWORD read = 0;
+            success = ReadFile(m_hCommFile[portId], buf, maxLen, &read, NULL);
+            *bytesRead = (UINT16)read;
+        }
+    }
 
     SSPOSAL_LockPut(hSerialLock[portId]);
     return success ? TRUE : FALSE;
-
-error:
-    SSPOSAL_LockPut(hSerialLock[portId]);
-    return FALSE;
 }
 
 BOOL SSPHAL_IsRecvQueueEmpty(SspPortId portId)
@@ -210,12 +232,11 @@ BOOL SSPHAL_IsRecvQueueEmpty(SspPortId portId)
     DWORD errors;
     COMSTAT comStat;
     BOOL success = ClearCommError(m_hCommFile[portId], &errors, &comStat);
-    ASSERT_TRUE(success == TRUE);
 
     SSPOSAL_LockPut(hSerialLock[portId]);
 
-    // If receive queue is empty
-    if (comStat.cbInQue == 0)
+    // Port closed or failed, or receive queue empty
+    if (!success || comStat.cbInQue == 0)
         return TRUE;
     else
         return FALSE;
@@ -223,17 +244,16 @@ BOOL SSPHAL_IsRecvQueueEmpty(SspPortId portId)
 
 void SSPHAL_PortFlush(SspPortId portId)
 {
-    ASSERT_TRUE(portId >= SSP_PORT1 && portId <= SSP_MAX_PORTS);
+    ASSERT_TRUE(portId >= SSP_PORT1 && portId < SSP_MAX_PORTS);
 
     SSPOSAL_LockGet(hSerialLock[portId], SSP_LOCK_WAIT_DEFAULT);
 
     PurgeComm(m_hCommFile[portId], PURGE_RXCLEAR | PURGE_TXCLEAR | PURGE_RXABORT | PURGE_TXABORT);
 
-    // Clear the port of COM errors 
+    // Clear the port of COM errors
     DWORD errors;
     COMSTAT comStat;
-    BOOL success = ClearCommError(m_hCommFile[portId], &errors, &comStat);
-    ASSERT_TRUE(success == TRUE);
+    ClearCommError(m_hCommFile[portId], &errors, &comStat);
 
     SSPOSAL_LockPut(hSerialLock[portId]);
 }
@@ -254,4 +274,3 @@ BOOL SSPHAL_IsPowerSave(void)
 }
 
 #endif
-

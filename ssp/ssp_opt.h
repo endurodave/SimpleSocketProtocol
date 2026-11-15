@@ -14,6 +14,7 @@
 #define SSP_HAL_WIN     2       // Windows serial communication
 #define SSP_HAL_ARDUINO 3       // Arduino serial communication
 #define SSP_HAL_LOCALHOST 4     // Linux localhost communication
+#define SSP_HAL_SERIAL_POSIX 5  // Linux serial port (termios)
 
 // Users can override ssp_opt.h with their own configuration by defining
 // SSP_CONFIG as a header file to include (-DSSP_CONFIG=ssp_opt_cus.h).
@@ -37,8 +38,11 @@
 // Maximum packet size including header, body and CRC (max value 256)
 #define SSP_MAX_PACKET_SIZE 64
 
-// Define to output log messages
+// Define to output log messages (build with -DSSP_NO_TRACE to turn them off,
+// e.g. when the log would go out on the same serial port as SSP)
+#ifndef SSP_NO_TRACE
 #define USE_SSP_TRACE
+#endif
 
 // Define uses fixed block allocator. Undefine uses malloc/free.
 #define USE_FB_ALLOCATOR
@@ -54,26 +58,36 @@
 #endif
 #endif
 
-// Windows build options
+// Windows build options (OSAL: SSP_OSAL_STD or SSP_OSAL_WIN; HAL: SSP_HAL_MEM_BUF
+// or SSP_HAL_WIN for a COM port). Override with build flags.
 #ifdef WIN32
-//#define SSP_OSAL        SSP_OSAL_NO_OS
-//#define SSP_OSAL        SSP_OSAL_WIN
+#ifndef SSP_OSAL
 #define SSP_OSAL        SSP_OSAL_STD
+#endif
+#ifndef SSP_HAL
 #define SSP_HAL         SSP_HAL_MEM_BUF
-//#define SSP_HAL         SSP_HAL_WIN
+#endif
 #endif
 
 // GCC build options
 #ifdef BARE_METAL
+#ifndef SSP_OSAL
 #define SSP_OSAL        SSP_OSAL_NO_OS
+#endif
+#ifndef SSP_HAL
 #define SSP_HAL         SSP_HAL_MEM_BUF
 #endif
+#endif
 
-// GCC build options
+// Linux/Unix build options (HAL: SSP_HAL_MEM_BUF, SSP_HAL_LOCALHOST or
+// SSP_HAL_SERIAL_POSIX for a serial port). Override with build flags.
 #if defined __unix__
+#ifndef SSP_OSAL
 #define SSP_OSAL        SSP_OSAL_UNIX
+#endif
+#ifndef SSP_HAL
 #define SSP_HAL         SSP_HAL_MEM_BUF
-//#define SSP_HAL         SSP_HAL_LOCALHOST
+#endif
 #endif
 
 typedef enum
