@@ -1,6 +1,6 @@
 {
   "name": "SimpleSocketProtocol",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Simple Socket Protocol (SSP): lightweight C binary protocol for UART/serial links between embedded CPUs. Sockets, ACK/NAK, retries, CRC, fixed-block allocator, portable HAL/OSAL.",
   "keywords": [
     "serial",
