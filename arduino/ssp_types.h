@@ -4,12 +4,15 @@
 #if WIN32
 	#include "windows.h"
 #else
+	#include <stdint.h>
 	typedef signed char INT8;
 	typedef unsigned char UINT8;
 	typedef signed short INT16;
 	typedef unsigned short UINT16;
-	typedef unsigned int UINT32;
-	typedef int INT32;
+	// Fixed width: int is 16 bits on AVR (Arduino Uno/Mega), so "unsigned int"
+	// would make these 16-bit there
+	typedef uint32_t UINT32;
+	typedef int32_t INT32;
 	typedef char CHAR;
 	typedef short SHORT;
 	typedef long LONG;

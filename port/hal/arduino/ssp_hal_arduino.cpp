@@ -36,7 +36,7 @@ void SSPHAL_Term(void)
 
 BOOL SSPHAL_PortOpen(SspPortId portId)
 {
-    ASSERT_TRUE(portId >= SSP_PORT1 && portId <= SSP_MAX_PORTS);
+    ASSERT_TRUE(portId >= SSP_PORT1 && portId < SSP_MAX_PORTS);
 
     SSPOSAL_LockGet(hSerialLock[portId], SSP_LOCK_WAIT_DEFAULT);
 
@@ -58,7 +58,7 @@ BOOL SSPHAL_PortOpen(SspPortId portId)
 
 void SSPHAL_PortClose(SspPortId portId)
 {
-    ASSERT_TRUE(portId >= SSP_PORT1 && portId <= SSP_MAX_PORTS);
+    ASSERT_TRUE(portId >= SSP_PORT1 && portId < SSP_MAX_PORTS);
 
     SSPOSAL_LockGet(hSerialLock[portId], SSP_LOCK_WAIT_DEFAULT);
 
@@ -100,7 +100,7 @@ BOOL SSPHAL_PortIsOpen(SspPortId portId)
 
 BOOL SSPHAL_PortSend(SspPortId portId, const char* buf, UINT16 bytesToSend)
 {
-    ASSERT_TRUE(portId >= SSP_PORT1 && portId <= SSP_MAX_PORTS);
+    ASSERT_TRUE(portId >= SSP_PORT1 && portId < SSP_MAX_PORTS);
 
     if (NULL == buf || 0 == bytesToSend)
         return FALSE;
@@ -122,7 +122,7 @@ BOOL SSPHAL_PortSend(SspPortId portId, const char* buf, UINT16 bytesToSend)
 
     SSPOSAL_LockPut(hSerialLock[portId]);
 
-    if (bytesSent == bytesToSend)
+    if (bytesSent == (int)bytesToSend)
         return TRUE;
     else
         return FALSE; 
@@ -130,7 +130,7 @@ BOOL SSPHAL_PortSend(SspPortId portId, const char* buf, UINT16 bytesToSend)
 
 BOOL SSPHAL_PortRecv(SspPortId portId, char* buf, UINT16* bytesRead, UINT16 maxLen, UINT16 timeout)
 {
-    ASSERT_TRUE(portId >= SSP_PORT1 && portId <= SSP_MAX_PORTS);
+    ASSERT_TRUE(portId >= SSP_PORT1 && portId < SSP_MAX_PORTS);
 
     if (NULL == buf || NULL == bytesRead)
         return FALSE;
@@ -154,10 +154,6 @@ BOOL SSPHAL_PortRecv(SspPortId portId, char* buf, UINT16* bytesRead, UINT16 maxL
 
     SSPOSAL_LockPut(hSerialLock[portId]);
     return TRUE;
-
-error:
-    SSPOSAL_LockPut(hSerialLock[portId]);
-    return FALSE;
 }
 
 BOOL SSPHAL_IsRecvQueueEmpty(SspPortId portId)
@@ -188,7 +184,7 @@ BOOL SSPHAL_IsRecvQueueEmpty(SspPortId portId)
 
 void SSPHAL_PortFlush(SspPortId portId)
 {
-    ASSERT_TRUE(portId >= SSP_PORT1 && portId <= SSP_MAX_PORTS);
+    ASSERT_TRUE(portId >= SSP_PORT1 && portId < SSP_MAX_PORTS);
 
     SSPOSAL_LockGet(hSerialLock[portId], SSP_LOCK_WAIT_DEFAULT);
 

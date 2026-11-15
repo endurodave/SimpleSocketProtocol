@@ -2,6 +2,7 @@
 [![Ubuntu](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_ubuntu.yml/badge.svg)](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_ubuntu.yml)
 [![Clang](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_clang.yml/badge.svg)](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_clang.yml)
 [![Windows](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_windows.yml/badge.svg)](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_windows.yml)
+[![PlatformIO](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/platformio.yml/badge.svg)](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/platformio.yml)
 
 # Simple Socket Protocol for Embedded Systems
 
@@ -638,13 +639,23 @@ typedef enum
 
 ## PlatformIO
 
-SSP is a PlatformIO library. Add it to `platformio.ini`:
+SSP is in the [PlatformIO registry](https://registry.platformio.org/libraries/endurodave/SimpleSocketProtocol). Add it to `platformio.ini`:
 
 ```ini
-lib_deps = SimpleSocketProtocol
+lib_deps = endurodave/SimpleSocketProtocol@^1.1.1
 ```
 
-On Arduino the HAL uses `Serial1` (`SSP_PORT1`) and `Serial2` (`SSP_PORT2`), so pick a board with at least three hardware UARTs, such as the Mega 2560, ESP32 or Due. The Uno has only `Serial` and won't build.
+On Arduino the HAL uses `Serial1` (`SSP_PORT1`) and `Serial2` (`SSP_PORT2`), so pick a board with at least three hardware UARTs, such as the Mega 2560, ESP32 or Due. The Uno has only `Serial` and won't build. To run SSP without the UARTs, e.g. to try it before wiring anything, add `build_flags = -DSSP_HAL=SSP_HAL_MEM_BUF`: ports 1 and 2 are then looped back to each other in memory.
+
+The [ssp-demo](https://github.com/endurodave/SimpleSocketProtocol/tree/main/examples/platformio/ssp-demo) example sends messages between socket 0 on port 1 and socket 1 on port 2 and checks that each one is received and ACKed. On a Mega 2560 or Due, connect `Serial1` and `Serial2` with two jumper wires (TX1 pin 18 to RX2 pin 17, TX2 pin 16 to RX1 pin 19), or use the `megaatmega2560_loopback` environment, which needs no wiring:
+
+```shell
+cd examples/platformio/ssp-demo
+pio run -e megaatmega2560_loopback -t upload -t monitor
+pio run -e native -t exec
+```
+
+Version 1.1.1 fixes ACK timeouts on 8-bit AVR boards (Uno, Mega): in 1.1.0 a message that wasn't ACKed was never retried or failed, so SSP stalled.
 
 To change ports, sockets, timeouts or sizes, copy `ssp/ssp_opt.h` to your project's `include/` folder under a new name (e.g. `ssp_opt_cus.h`, as in `port/ssp_opt_cus.h`) and point SSP at it:
 

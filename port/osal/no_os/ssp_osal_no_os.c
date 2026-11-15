@@ -8,6 +8,13 @@
 
 #include "ssp_osal.h"
 
+#ifdef ARDUINO
+// Arduino's millis() (declared in the C++ Arduino.h). Without this declaration
+// C assumes it returns int, which is 16 bits on AVR: the tick count then reads
+// the wrong half of the 32-bit value and ACK timeouts never expire.
+unsigned long millis(void);
+#endif
+
 void SSPOSAL_Init(void)
 {
 }

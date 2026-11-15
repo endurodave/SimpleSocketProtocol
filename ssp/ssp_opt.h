@@ -43,10 +43,15 @@
 // Define uses fixed block allocator. Undefine uses malloc/free.
 #define USE_FB_ALLOCATOR
 
-// Arduino build options
+// Arduino build options. Override either with a build flag, e.g.
+// -DSSP_HAL=SSP_HAL_MEM_BUF to loop ports 1 and 2 back in memory (no wiring).
 #ifdef ARDUINO
+#ifndef SSP_OSAL
 #define SSP_OSAL        SSP_OSAL_NO_OS
+#endif
+#ifndef SSP_HAL
 #define SSP_HAL         SSP_HAL_ARDUINO
+#endif
 #endif
 
 // Windows build options
