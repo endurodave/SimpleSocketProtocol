@@ -3,12 +3,25 @@
 #include <stdio.h>
 #include <stdarg.h>
 #ifdef ARDUINO
-#include <Arduino.h>
+#include "ssp_arduino.h"
+
+// Where trace text goes; SSP_ArduinoSetTrace(nullptr) turns it off
+static Print* traceOut = &Serial;
+
+void SSP_ArduinoSetTrace(Print* out)
+{
+    traceOut = out;
+}
 #endif
 
 // Trace output used for debugging
 void SSP_TraceFormat(const char* format, ...)
 {
+#ifdef ARDUINO
+    if (traceOut == nullptr)
+        return;
+#endif
+
     SSPOSAL_EnterCritical();
 
     va_list vl;
@@ -16,8 +29,8 @@ void SSP_TraceFormat(const char* format, ...)
 
 #ifdef ARDUINO
     char buf[128];
-    vsprintf(buf, format, vl);
-    Serial.println(buf);
+    vsnprintf(buf, sizeof(buf), format, vl);
+    traceOut->println(buf);
 #else
     vprintf(format, vl);
 #endif
@@ -34,10 +47,15 @@ void SSP_TraceFormat(const char* format, ...)
 // Trace output used for debugging
 void SSP_Trace(const char* str)
 {
+#ifdef ARDUINO
+    if (traceOut == nullptr)
+        return;
+#endif
+
     SSPOSAL_EnterCritical();
 
 #ifdef ARDUINO
-    Serial.println(str);
+    traceOut->println(str);
 #else
     printf("%s", str);
     printf("\n");

@@ -23,9 +23,9 @@ file(GLOB SOURCES "${CMAKE_SOURCE_DIR}/*.cpp" "${CMAKE_SOURCE_DIR}/*.h")
 
 # Add subdirectories to include path
 include_directories( 
-    ${CMAKE_SOURCE_DIR}/example
-    ${CMAKE_SOURCE_DIR}/port
-    ${CMAKE_SOURCE_DIR}/ssp
+    ${CMAKE_SOURCE_DIR}/examples/desktop
+    ${CMAKE_SOURCE_DIR}/src/port
+    ${CMAKE_SOURCE_DIR}/src
 )
 
 # Add an executable target
@@ -36,9 +36,9 @@ if (ENABLE_ALLOCATOR)
 endif()
 
 # Add subdirectories to build
-add_subdirectory(example)
-add_subdirectory(port)
-add_subdirectory(ssp)
+add_subdirectory(examples/desktop)
+add_subdirectory(src/port)
+add_subdirectory(src)
 
 target_link_libraries(SimpleSocketProtocolApp PRIVATE 
     ExampleLib

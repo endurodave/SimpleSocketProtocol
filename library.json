@@ -1,6 +1,6 @@
 {
   "name": "SimpleSocketProtocol",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Simple Socket Protocol (SSP): lightweight C binary protocol for UART/serial links between embedded CPUs. Sockets, ACK/NAK, retries, CRC, fixed-block allocator, portable HAL/OSAL.",
   "keywords": [
     "serial",
@@ -26,31 +26,28 @@
   "homepage": "https://github.com/endurodave/SimpleSocketProtocol",
   "frameworks": "*",
   "platforms": "*",
-  "headers": "ssp.h",
+  "headers": [
+    "SimpleSocketProtocol.h",
+    "ssp.h",
+    "ssp_arduino.h"
+  ],
   "export": {
     "include": [
-      "ssp",
-      "port",
-      "example",
+      "src",
+      "examples",
       "LICENSE",
       "README.md",
       "library.json",
-      "examples/platformio/ssp-demo/platformio.ini",
-      "examples/platformio/ssp-demo/src/main.cpp",
-      "examples/platformio/ssp-device/platformio.ini",
-      "examples/platformio/ssp-device/src/main.cpp",
-      "examples/pc-host/CMakeLists.txt",
-      "examples/pc-host/main.cpp"
+      "library.properties"
+    ],
+    "exclude": [
+      "**/.pio",
+      "**/.pio/**"
     ]
   },
   "build": {
-    "srcDir": ".",
-    "includeDir": "ssp",
-    "srcFilter": [
-      "-<*>",
-      "+<ssp/>",
-      "+<port/>"
-    ]
+    "srcDir": "src",
+    "includeDir": "src"
   },
   "examples": [
     {
@@ -67,6 +64,20 @@
       "files": [
         "platformio.ini",
         "src/main.cpp"
+      ]
+    },
+    {
+      "name": "SSP_Demo",
+      "base": "examples/SSP_Demo",
+      "files": [
+        "SSP_Demo.ino"
+      ]
+    },
+    {
+      "name": "SSP_Device",
+      "base": "examples/SSP_Device",
+      "files": [
+        "SSP_Device.ino"
       ]
     }
   ]

@@ -1,5 +1,0 @@
-# Source files copied in by copysrc.bat / copysrc.sh: not committed, so they
-# never drift from ssp/ and port/
-*.c
-*.cpp
-*.h
