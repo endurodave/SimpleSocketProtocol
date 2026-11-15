@@ -4,6 +4,7 @@
 [![Windows](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_windows.yml/badge.svg)](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/cmake_windows.yml)
 [![PlatformIO](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/platformio.yml/badge.svg)](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/platformio.yml)
 [![PC Host](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/pc_host.yml/badge.svg)](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/pc_host.yml)
+[![Arduino](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/arduino.yml/badge.svg)](https://github.com/endurodave/SimpleSocketProtocol/actions/workflows/arduino.yml)
 
 # Simple Socket Protocol for Embedded Systems
 
@@ -137,6 +138,8 @@ David Lafreniere, Jan 2022.
 2. From the repository root, run the following CMake command:   
    `cmake -B Build .`
 3. Build and run the project within the `Build` directory. 
+
+The library source is in `src`: the protocol in `src` itself and the platform ports (HAL and OSAL) in `src/port`. The desktop example built by CMake is in `examples/desktop`.
 
 See `ssp_opt.h` to configure the sample application build options for each target platform.
 
@@ -390,7 +393,7 @@ void SSPHAL_PowerSave(BOOL enable);
 BOOL SSPHAL_IsPowerSave(void);
 ```
 
-<p>Each abstraction interface must be implemented for a specific target. Example implementations for Windows, Linux, Arduino, and C++ standard library are located within the <strong>port </strong>directory.</p>
+<p>Each abstraction interface must be implemented for a specific target. Example implementations for Windows, Linux, Arduino, and C++ standard library are located within the <strong>src/port</strong> directory.</p>
 
 <p>The HAL interfaces to the communication driver. <code>SSPHAL_PortSend()</code> sends data and <code>SSPHAL_PortRecv()</code> reads data. Typically the driver uses internal send/receive buffers to facilitate data communication. The driver details are application specific. Maybe the driver is interrupt driven sending/receiving one or more bytes per interrupt. Or perhaps DMA transfer is utilized. Regardless, the HAL abstracts those details from the SSP library.</p>
 
@@ -635,19 +638,33 @@ typedef enum
 
 ## Arduino
 
-<p>The <strong>arduino</strong> directory contains the <strong>arduino.ino</strong> sketch file. This file contains the &ldquo;main&rdquo; application source code.</p>
+SSP is an Arduino library. In the Arduino IDE, install **SimpleSocketProtocol** from the Library Manager (Sketch &rarr; Include Library &rarr; Manage Libraries), or download the repository as a ZIP and use Sketch &rarr; Include Library &rarr; Add .ZIP Library. Then `#include <SimpleSocketProtocol.h>`, and see File &rarr; Examples &rarr; SimpleSocketProtocol:
 
-The Arduino IDE only builds files inside the sketch folder, so the SSP sources are copied in rather than kept there: run `copysrc.bat` (Windows) or `sh copysrc.sh` (Linux/macOS) in the `arduino` folder once before opening the sketch, and again after updating the repository. The copies are ignored by git. See [arduino/README.md](https://github.com/endurodave/SimpleSocketProtocol/blob/main/arduino/README.md). With PlatformIO, use the library and its examples instead (below).
+| Example | What it does |
+|---|---|
+| `SSP_Demo` | Two SSP ports on one board (`Serial1` and `Serial2`, jumpered together) exchange messages and check every ACK |
+| `SSP_Device` | SSP on `Serial` (USB) answering a PC running the [PC host](#pc-host): no wiring |
+
+By default port 1 is `Serial1` and port 2 is `Serial2`, on boards that have them. To use another serial port, or to turn the trace text off, call these from `ssp_arduino.h` before `SSP_Init()` (the Arduino IDE has no build flags):
+
+```cpp
+Serial.begin(115200);
+SSP_ArduinoSetPort(SSP_PORT1, Serial);   // SSP port 1 = the USB serial port
+SSP_ArduinoSetTrace(nullptr);            // trace off: it would share that port
+SSP_Init(SSP_PORT1);
+```
+
+SSP needs about 2 KB of RAM, so use a Mega 2560 or a 32-bit board (ESP32, Due, STM32, RP2040); on an Uno it compiles but leaves almost no memory.
 
 ## PlatformIO
 
 SSP is in the [PlatformIO registry](https://registry.platformio.org/libraries/endurodave/SimpleSocketProtocol). Add it to `platformio.ini`:
 
 ```ini
-lib_deps = endurodave/SimpleSocketProtocol@^1.1.1
+lib_deps = endurodave/SimpleSocketProtocol@^1.2.0
 ```
 
-On Arduino the HAL uses `Serial1` for `SSP_PORT1` and `Serial2` for `SSP_PORT2` by default. Build flags change that:
+The Arduino options above (`SSP_ArduinoSetPort`, `SSP_ArduinoSetTrace`) work in PlatformIO too. Build flags can set them instead:
 
 | Flag | Effect |
 |---|---|
@@ -670,7 +687,7 @@ The [ssp-device](https://github.com/endurodave/SimpleSocketProtocol/tree/main/ex
 
 Version 1.1.1 fixes ACK timeouts on 8-bit AVR boards (Uno, Mega): in 1.1.0 a message that wasn't ACKed was never retried or failed, so SSP stalled.
 
-To change ports, sockets, timeouts or sizes, copy `ssp/ssp_opt.h` to your project's `include/` folder under a new name (e.g. `ssp_opt_cus.h`, as in `port/ssp_opt_cus.h`) and point SSP at it:
+To change ports, sockets, timeouts or sizes, copy `src/ssp_opt.h` to your project's `include/` folder under a new name (e.g. `ssp_opt_cus.h`, as in `src/port/ssp_opt_cus.h`) and point SSP at it:
 
 ```ini
 build_flags = -DSSP_CONFIG=ssp_opt_cus.h
@@ -701,7 +718,7 @@ In your own program, pick the port with `SSPHAL_SetPortName()` (and optionally `
 
 # Serialize
 
-The <b>example_serialize.cpp</b> shows how to use a simple C++ binary message serializer to encode C++ objects for transport over SSP (or any other protocol).
+The <b>examples/desktop/serialize_example.cpp</b> shows how to use a simple C++ binary message serializer to encode C++ objects for transport over SSP (or any other protocol).
 
 # Resources
 

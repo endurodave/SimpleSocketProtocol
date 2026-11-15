@@ -39,15 +39,19 @@ SSP_OSAL_HANDLE SSPOSAL_LockCreate(void)
 
 void SSPOSAL_LockDestroy(SSP_OSAL_HANDLE handle)
 {
+    (void)handle;
 }
 
 BOOL SSPOSAL_LockGet(SSP_OSAL_HANDLE handle, UINT32 timeout)
 {
+    (void)handle;
+    (void)timeout;
     return TRUE;
 }
 
 BOOL SSPOSAL_LockPut(SSP_OSAL_HANDLE handle)
 {
+    (void)handle;
     return TRUE;
 }
 

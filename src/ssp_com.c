@@ -135,7 +135,7 @@ static SspErr Receive(SspPortId portId, const SspData** sspData, UINT16 timeout)
             complete = Parse((UINT8*)parseData, bytesRead, &bytesParsed);
 
             // Save parse data history incase need to reparse header
-            for (int i = 0; i < bytesRead; i++)
+            for (UINT16 i = 0; i < bytesRead; i++)
             {
                 if (parseHistoryIdx >= PARSE_HISTORY_SIZE)
                     break;
