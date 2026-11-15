@@ -656,6 +656,8 @@ SSP_Init(SSP_PORT1);
 
 SSP needs about 2 KB of RAM, so use a Mega 2560 or a 32-bit board (ESP32, Due, STM32, RP2040); on an Uno it compiles but leaves almost no memory.
 
+A failed internal check (`ASSERT`) calls `FaultHandler(file, line)`, which prints the location as trace and halts (`abort()`), also in builds with `NDEBUG`. It is a weak symbol on GCC and Clang: define your own `extern "C" void FaultHandler(const char* file, unsigned short line)` to log, blink or reset instead.
+
 ## PlatformIO
 
 SSP is in the [PlatformIO registry](https://registry.platformio.org/libraries/endurodave/SimpleSocketProtocol). Add it to `platformio.ini`:
